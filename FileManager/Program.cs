@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
+using NConsoleGraphics;
 
 
 namespace FileManager
@@ -13,31 +14,23 @@ namespace FileManager
         public static void Main(string[] args)
         {
             Console.CursorVisible = false;
-            FolderView f = new FolderView();
-            f.Explorer();
-            
-            
-            //List<string> str = new List<string>()
+            Console.WindowHeight = Console.LargestWindowHeight;
+            Console.WindowWidth = Console.LargestWindowWidth;
+            //ConsoleGraphics g = new ConsoleGraphics();
+            //while (true)
             //{
-            //    "Name",
-            //    "Type",
-            //    "Extention",
-            //    "Size"
-            //};
-
-            //int left = 0;
-            //int top = 0;
-
-            //for (int i = 0; i < 4; i++, top++)
-            //{
-            //    for (int j = 0; j < str.Count; j++, left+= str[j-1].Length+1)
-            //    {
-            //        Console.SetCursorPosition(left, top);
-            //        Console.WriteLine(str[j]);
-            //    }
-            //    left = 0;
+            //    g.FillRectangle(0xFF000000, 0, 0, g.ClientWidth, g.ClientHeight);
+            //    g.DrawRectangle(0xFFFFFFFF, 10, 50, 900, 700);
+            //    g.DrawString("Hello", "ISOCPEUR", 0xFF756d6c, 10, 50, 12);
+            //    g.DrawString("Hello", "ISOCPEUR", 0xFFFFFFFF, 10, 62, 12);
+            //    g.DrawRectangle(0xFFFFFFFF, 960, 50, 900, 700);
+            //    g.FlipPages();
             //}
-
+            Window window = new Window();
+            window.Explorer();
+            
+            //FolderView f = new FolderView();
+            //f.Explorer();
             Console.ReadLine();
         }
     }

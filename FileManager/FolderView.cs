@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using NConsoleGraphics;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -9,96 +11,181 @@ namespace FileManager
 {
     public class FolderView
     {
+        private readonly int _windowCordinateX;
+        private readonly List<DriveInfo> _drives;
+        private readonly List<FileSystemInfo> _folderContent;
         private int _position;
         private string _currentPath;
-        private List<FileSystemInfo> _items;
 
-        public FolderView()
+        public FolderView(int windowCordinateX)
         {
-            _currentPath = Settings.DefaultPath;
-            _items = new List<FileSystemInfo>();
+            _windowCordinateX = windowCordinateX;
+            _currentPath = string.Empty;
+            _folderContent = new List<FileSystemInfo>();
+            _drives = new List<DriveInfo>();
+            _drives.AddRange(DriveInfo.GetDrives());
         }
 
-        public void Show()
+        public void Show(ConsoleGraphics graphics, bool isActive)
         {
-            _items.AddRange(Directory.GetDirectories(_currentPath).Select(str => new DirectoryInfo(str)).Cast<FileSystemInfo>().Concat(Directory.GetFiles(_currentPath).Select(str => new FileInfo(str)).Cast<FileSystemInfo>()));
+            uint color = (isActive) ? Settings.ActiveColor : Settings.InactiveColor;
+            graphics.DrawRectangle(color, _windowCordinateX, Settings.WindowCoordinateY, Settings.WindowWidth, Settings.WindowHeight);
 
-            for (int i = 0; i < _items.Count; i++)
+            if (_currentPath == string.Empty)
+            {
+                DisplayDrives(graphics, color);
+            }
+            else
+            {
+                DisplayFolderContent(graphics, color);
+            }
+        }
+
+        public void Navigate(ref bool isLeftActive, ref bool isRightActive)
+        {
+            ConsoleKey command = Console.ReadKey().Key;
+
+            switch (command)
+            {
+                case ConsoleKey.DownArrow:
+                    MoveDown();
+                    break;
+                case ConsoleKey.UpArrow:
+                    MoveUp();
+                    break;
+                case ConsoleKey.Enter when _currentPath == string.Empty:
+                    InFolder(_drives[_position].Name);
+                    break;
+                case ConsoleKey.Enter when _folderContent.Any() && (_folderContent[_position] is DirectoryInfo):
+                    InFolder(_folderContent[_position].Name);
+                    break;
+                case ConsoleKey.Enter when _folderContent[_position] is FileInfo:
+                    Process.Start(_folderContent[_position].FullName);
+                    break;
+                case ConsoleKey.Backspace when _currentPath == string.Empty:
+                    break;
+                case ConsoleKey.Backspace:
+                    InFolder("..");
+                    break;
+                case ConsoleKey.Tab:
+                    if (isLeftActive)
+                    {
+                        isLeftActive = false;
+                        isRightActive = true;
+                    }
+                    else if (isRightActive)
+                    {
+                        isLeftActive = true;
+                        isRightActive = false;
+                    }
+                    break;
+            }
+        }
+
+        private void DisplayDrives(ConsoleGraphics graphics, uint color)
+        {
+            int coordinateY = Settings.WindowCoordinateY;
+
+            for (int i = 0; i < _drives.Count; i++)
             {
                 if (i == _position)
                 {
-                    DisplaySelectItem(_items[i]);
+                    graphics.FillRectangle(color, _windowCordinateX, coordinateY+5, Settings.WindowWidth, Settings.FontSize);
+                    graphics.DrawString($"{_drives[i].Name}", Settings.FontName, Settings.BlackColor, _windowCordinateX, coordinateY, Settings.FontSize);
                 }
                 else
                 {
-                    DisplayInfo(_items[i]);
+                    graphics.DrawString($"{_drives[i].Name}", Settings.FontName, color, _windowCordinateX, coordinateY, Settings.FontSize);
                 }
 
+                coordinateY += Settings.FontSize;
             }
         }
 
-        public void Explorer()
+        private void DisplayFolderContent(ConsoleGraphics graphics, uint color)
         {
-            do
+            int coordinateY = Settings.WindowCoordinateY;
+
+            for (int i = 0; i < _folderContent.Count; i++)
             {
-                Show();
-                HandleClick();
+                if (i == _position)
+                {
+                    graphics.FillRectangle(color, _windowCordinateX, coordinateY+5, Settings.WindowWidth, Settings.FontSize-1);
+                    graphics.DrawString($"{_folderContent[i].Name}", Settings.FontName, Settings.BlackColor, _windowCordinateX, coordinateY, Settings.FontSize);
+
+                    if (_folderContent[i] is FileInfo file)
+                    {
+                        graphics.DrawString($"<{file.Extension}>", Settings.FontName, Settings.BlackColor, _windowCordinateX + Settings.ExtensionCoodrinateX, coordinateY, Settings.FontSize);
+                       graphics.DrawString($"{file.Length} Byte", Settings.FontName, Settings.BlackColor, _windowCordinateX + Settings.SizeCoodrinateX, coordinateY, Settings.FontSize);
+                    }
+                    else
+                    {
+                        graphics.DrawString("<dir>", Settings.FontName, Settings.BlackColor, _windowCordinateX + Settings.ExtensionCoodrinateX, coordinateY, Settings.FontSize);
+                    }
+                }
+                else
+                {
+                    graphics.DrawString($"{_folderContent[i].Name}", Settings.FontName, color, _windowCordinateX, coordinateY, Settings.FontSize);
+
+                    if (_folderContent[i] is FileInfo file)
+                    {
+                        graphics.DrawString($"<{file.Extension}>", Settings.FontName, color, _windowCordinateX + Settings.ExtensionCoodrinateX, coordinateY, Settings.FontSize);
+                        graphics.DrawString($"{file.Length} Byte", Settings.FontName, color, _windowCordinateX + Settings.SizeCoodrinateX, coordinateY, Settings.FontSize);
+                    }
+                    else
+                    {
+                        graphics.DrawString("<dir>", Settings.FontName, color, _windowCordinateX + Settings.ExtensionCoodrinateX, coordinateY, Settings.FontSize);
+                    }
+                }
+
+                coordinateY += Settings.FontSize;
             }
-            while (true);
         }
 
-        public void HandleClick()
+        private void InitCurrentDirectory()
         {
-            var click = Console.ReadKey();
+            _folderContent.Clear();
+            _folderContent.AddRange(Directory.GetDirectories(_currentPath).Select(str => new DirectoryInfo(str)).Cast<FileSystemInfo>().Concat(Directory.GetFiles(_currentPath).Select(str => new FileInfo(str)).Cast<FileSystemInfo>()));
+        }
 
-            if (click.Key == ConsoleKey.DownArrow)
+        private void MoveDown()
+        {
+            if (_currentPath == string.Empty)
             {
-                _position = (_position++ == _items.Count - 1) ? 0 : _position++;
+                _position = (_position++ == _drives.Count - 1) ? 0 : _position++;
             }
-            else if (click.Key == ConsoleKey.UpArrow)
+            else
             {
-                _position = (_position-- <= 0) ? _items.Count - 1 : _position--;
+                _position = (_position++ == _folderContent.Count - 1) ? 0 : _position++;
             }
-            else if (_items.Any() && (click.Key == ConsoleKey.Enter) && (_items[_position] is DirectoryInfo))
-            {
-                InFolder(_items[_position].FullName);
-                _position = 0;
-            }
-            else if (click.Key == ConsoleKey.Escape)
-            {
-                InFolder("..");
-                _position = 0;
-            }
+        }
 
-            _items.Clear();
-            Console.Clear();
+        private void MoveUp()
+        {
+            if (_currentPath == string.Empty)
+            {
+                _position = (_position-- <= 0) ? _drives.Count - 1 : _position--;
+            }
+            else
+            {
+                _position = (_position-- <= 0) ? _folderContent.Count - 1 : _position--;
+            }
         }
 
         private void InFolder(string folderPath)
         {
-            _currentPath = Path.Combine(_currentPath, folderPath);
-            _currentPath = new DirectoryInfo(_currentPath).FullName;
-        }
-
-        private void DisplaySelectItem(FileSystemInfo systemFile)
-        {
-            Console.BackgroundColor = ConsoleColor.White;
-            Console.ForegroundColor = ConsoleColor.Black;
-            DisplayInfo(systemFile);
-            Console.ResetColor();
-        }
-
-        private void DisplayInfo(FileSystemInfo systemFile)
-        {
-            if (systemFile is DirectoryInfo directory)
+            if (folderPath == ".." && Path.GetPathRoot(_currentPath) == _currentPath)
             {
-                Console.WriteLine($"{directory.Name}{new string(' ', Settings.NameRowSize - directory.Name.Length + 1)}<{"dir"}>{new string(' ', Settings.TypeRowSize - "dir".Length + 3)}{new string(' ', Settings.SizeRowSize)}");
+                _currentPath = string.Empty;
+            }
+            else
+            {
+                _currentPath = Path.Combine(_currentPath, folderPath);
+                _currentPath = new DirectoryInfo(_currentPath).FullName;
+                InitCurrentDirectory();
             }
 
-            if (systemFile is FileInfo file)
-            {
-                Console.WriteLine($"{file.Name}{new string(' ', Settings.NameRowSize - file.Name.Length + 1)}<{file.Extension}>{new string(' ', Settings.TypeRowSize - file.Extension.Length + 3)}{file.Length} Bytes{new string(' ', Settings.SizeRowSize - (file.Length.ToString().Length+6))}");
-            }
+            _position = 0;
         }
     }
 }
