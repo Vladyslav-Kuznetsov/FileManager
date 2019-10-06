@@ -8,7 +8,6 @@ namespace FileManager
 {
     public static class Settings
     {
-        //public const int NameCoodrinateX = 50;
         public const int ExtensionCoodrinateX = 300;
         public const int SizeCoodrinateX = 500;
         public const int LeftWindowCoordinateX = 10;
@@ -21,5 +20,12 @@ namespace FileManager
         public const uint BlackColor = 0xFF000000;
         public const int FontSize = 12;
         public const string FontName = "ISOCPEUR";
+
+        public static void SetupDefaultConsoleSettings()
+        {
+            Console.CursorVisible = false;
+            Console.WindowHeight = Console.LargestWindowHeight;
+            Console.WindowWidth = Console.LargestWindowWidth;
+        }
     }
 }

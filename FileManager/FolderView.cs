@@ -41,7 +41,7 @@ namespace FileManager
             }
         }
 
-        public void Navigate(ref bool isLeftActive, ref bool isRightActive)
+        public void Navigate(Window window)
         {
             ConsoleKey command = Console.ReadKey().Key;
 
@@ -68,16 +68,11 @@ namespace FileManager
                     InFolder("..");
                     break;
                 case ConsoleKey.Tab:
-                    if (isLeftActive)
-                    {
-                        isLeftActive = false;
-                        isRightActive = true;
-                    }
-                    else if (isRightActive)
-                    {
-                        isLeftActive = true;
-                        isRightActive = false;
-                    }
+                    window.IsLeftActive = !window.IsLeftActive;
+                    window.IsRightActive = !window.IsRightActive;
+                    break;
+                case ConsoleKey.Escape:
+                    window.Exit = !window.Exit;
                     break;
             }
         }
@@ -90,7 +85,7 @@ namespace FileManager
             {
                 if (i == _position)
                 {
-                    graphics.FillRectangle(color, _windowCordinateX, coordinateY+5, Settings.WindowWidth, Settings.FontSize);
+                    graphics.FillRectangle(color, _windowCordinateX, coordinateY + 5, Settings.WindowWidth, Settings.FontSize);
                     graphics.DrawString($"{_drives[i].Name}", Settings.FontName, Settings.BlackColor, _windowCordinateX, coordinateY, Settings.FontSize);
                 }
                 else
@@ -110,13 +105,13 @@ namespace FileManager
             {
                 if (i == _position)
                 {
-                    graphics.FillRectangle(color, _windowCordinateX, coordinateY+5, Settings.WindowWidth, Settings.FontSize-1);
+                    graphics.FillRectangle(color, _windowCordinateX, coordinateY + 5, Settings.WindowWidth, Settings.FontSize - 1);
                     graphics.DrawString($"{_folderContent[i].Name}", Settings.FontName, Settings.BlackColor, _windowCordinateX, coordinateY, Settings.FontSize);
 
                     if (_folderContent[i] is FileInfo file)
                     {
                         graphics.DrawString($"<{file.Extension}>", Settings.FontName, Settings.BlackColor, _windowCordinateX + Settings.ExtensionCoodrinateX, coordinateY, Settings.FontSize);
-                       graphics.DrawString($"{file.Length} Byte", Settings.FontName, Settings.BlackColor, _windowCordinateX + Settings.SizeCoodrinateX, coordinateY, Settings.FontSize);
+                        graphics.DrawString($"{file.Length} Byte", Settings.FontName, Settings.BlackColor, _windowCordinateX + Settings.SizeCoodrinateX, coordinateY, Settings.FontSize);
                     }
                     else
                     {
