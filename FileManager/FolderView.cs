@@ -4,8 +4,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using NConsoleGraphics;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FileManager
 {
@@ -16,6 +14,7 @@ namespace FileManager
         private readonly List<FileSystemInfo> _folderContent;
         private int _position;
         private string _currentPath;
+        private bool _propertiesActive;
 
         public FolderView(int windowCordinateX)
         {
@@ -24,6 +23,7 @@ namespace FileManager
             _folderContent = new List<FileSystemInfo>();
             _drives = new List<DriveInfo>();
             _drives.AddRange(DriveInfo.GetDrives());
+            _propertiesActive = false;
         }
 
         public void Show(ConsoleGraphics graphics, bool isActive)
@@ -38,6 +38,13 @@ namespace FileManager
             else
             {
                 DisplayFolderContent(graphics, color);
+
+                if (_propertiesActive)
+                {
+                    ShowProperties(graphics, color);
+                    _propertiesActive = false;
+                }
+                
             }
         }
 
@@ -70,6 +77,9 @@ namespace FileManager
                 case ConsoleKey.Tab:
                     window.IsLeftActive = !window.IsLeftActive;
                     window.IsRightActive = !window.IsRightActive;
+                    break;
+                case ConsoleKey.F6 when _currentPath != string.Empty:
+                    _propertiesActive = true;
                     break;
                 case ConsoleKey.Escape:
                     window.Exit = !window.Exit;
@@ -181,6 +191,55 @@ namespace FileManager
             }
 
             _position = 0;
+        }
+
+        private void ShowProperties(ConsoleGraphics graphics, uint color)
+        {
+            graphics.DrawRectangle(color, _windowCordinateX, Settings.PropertiesCoordinateY, Settings.WindowWidth, Settings.PropertiesHeight);
+
+            if (_folderContent[_position] is FileInfo file)
+            {
+                graphics.DrawString("Name:", Settings.FontName, color, _windowCordinateX, Settings.PropertiesCoordinateY, Settings.FontSize);
+                graphics.DrawString($"{file.Name}", Settings.FontName, color, _windowCordinateX + Settings.PropertiesInfoCoordinateX, Settings.PropertiesCoordinateY, Settings.FontSize);
+                graphics.DrawString("Parent directory:", Settings.FontName, color, _windowCordinateX, Settings.PropertiesCoordinateY + Settings.FontSize, Settings.FontSize);
+                graphics.DrawString($"{file.DirectoryName}", Settings.FontName, color, _windowCordinateX + Settings.PropertiesInfoCoordinateX, Settings.PropertiesCoordinateY + Settings.FontSize, Settings.FontSize);
+                graphics.DrawString("Root directory:", Settings.FontName, color, _windowCordinateX, Settings.PropertiesCoordinateY + Settings.FontSize * 2, Settings.FontSize);
+                graphics.DrawString($"{file.Directory.Root}", Settings.FontName, color, _windowCordinateX + Settings.PropertiesInfoCoordinateX, Settings.PropertiesCoordinateY + Settings.FontSize * 2, Settings.FontSize);
+                graphics.DrawString("Is read only:", Settings.FontName, color, _windowCordinateX, Settings.PropertiesCoordinateY + Settings.FontSize * 3, Settings.FontSize);
+                graphics.DrawString($"{file.IsReadOnly}", Settings.FontName, color, _windowCordinateX + Settings.PropertiesInfoCoordinateX, Settings.PropertiesCoordinateY + Settings.FontSize * 3, Settings.FontSize);
+                graphics.DrawString("Last read time:", Settings.FontName, color, _windowCordinateX, Settings.PropertiesCoordinateY + Settings.FontSize * 4, Settings.FontSize);
+                graphics.DrawString($"{file.LastAccessTime}", Settings.FontName, color, _windowCordinateX + Settings.PropertiesInfoCoordinateX, Settings.PropertiesCoordinateY + Settings.FontSize * 4, Settings.FontSize);
+                graphics.DrawString("Last write time:", Settings.FontName, color, _windowCordinateX, Settings.PropertiesCoordinateY + Settings.FontSize * 5, Settings.FontSize);
+                graphics.DrawString($"{file.LastWriteTime}", Settings.FontName, color, _windowCordinateX + Settings.PropertiesInfoCoordinateX, Settings.PropertiesCoordinateY + Settings.FontSize * 5, Settings.FontSize);
+                graphics.DrawString("Size:", Settings.FontName, color, _windowCordinateX, Settings.PropertiesCoordinateY + Settings.FontSize * 6, Settings.FontSize);
+                graphics.DrawString($"{file.Length} Byte", Settings.FontName, color, _windowCordinateX + Settings.PropertiesInfoCoordinateX, Settings.PropertiesCoordinateY + Settings.FontSize * 6, Settings.FontSize);
+            }
+
+            if(_folderContent[_position] is DirectoryInfo directory)
+            {
+                var currentDirectory = new DirectoryInfo(directory.FullName);
+                var parentDirectory = (directory.Parent.Name == string.Empty) ? directory.Root.Name : directory.Parent.Name;
+                var countFiles = currentDirectory.GetFiles(".", SearchOption.AllDirectories).Count();
+                var countDirectories = currentDirectory.GetDirectories(".", SearchOption.AllDirectories).Count();
+                var sizeDirectory = currentDirectory.GetFiles(".", SearchOption.AllDirectories).Sum(f => f.Length);
+
+                graphics.DrawString("Name:", Settings.FontName, color, _windowCordinateX, Settings.PropertiesCoordinateY, Settings.FontSize);
+                graphics.DrawString($"{directory.Name}", Settings.FontName, color, _windowCordinateX + Settings.PropertiesInfoCoordinateX, Settings.PropertiesCoordinateY, Settings.FontSize);
+                graphics.DrawString("Parent directory:", Settings.FontName, color, _windowCordinateX, Settings.PropertiesCoordinateY + Settings.FontSize, Settings.FontSize);
+                graphics.DrawString($"{parentDirectory}", Settings.FontName, color, _windowCordinateX + Settings.PropertiesInfoCoordinateX, Settings.PropertiesCoordinateY + Settings.FontSize, Settings.FontSize);
+                graphics.DrawString("Root directory:", Settings.FontName, color, _windowCordinateX, Settings.PropertiesCoordinateY + Settings.FontSize * 2, Settings.FontSize);
+                graphics.DrawString($"{directory.Root}", Settings.FontName, color, _windowCordinateX + Settings.PropertiesInfoCoordinateX, Settings.PropertiesCoordinateY + Settings.FontSize * 2, Settings.FontSize);
+                graphics.DrawString("Last read time:", Settings.FontName, color, _windowCordinateX, Settings.PropertiesCoordinateY + Settings.FontSize * 4, Settings.FontSize);
+                graphics.DrawString($"{directory.LastAccessTime}", Settings.FontName, color, _windowCordinateX + Settings.PropertiesInfoCoordinateX, Settings.PropertiesCoordinateY + Settings.FontSize * 4, Settings.FontSize);
+                graphics.DrawString("Last write time:", Settings.FontName, color, _windowCordinateX, Settings.PropertiesCoordinateY + Settings.FontSize * 5, Settings.FontSize);
+                graphics.DrawString($"{directory.LastWriteTime}", Settings.FontName, color, _windowCordinateX + Settings.PropertiesInfoCoordinateX, Settings.PropertiesCoordinateY + Settings.FontSize * 5, Settings.FontSize);
+                graphics.DrawString("Size:", Settings.FontName, color, _windowCordinateX, Settings.PropertiesCoordinateY + Settings.FontSize * 6, Settings.FontSize);
+                graphics.DrawString($"{sizeDirectory} Byte", Settings.FontName, color, _windowCordinateX + Settings.PropertiesInfoCoordinateX, Settings.PropertiesCoordinateY + Settings.FontSize * 6, Settings.FontSize);
+                graphics.DrawString("Files:", Settings.FontName, color, _windowCordinateX, Settings.PropertiesCoordinateY + Settings.FontSize * 7, Settings.FontSize);
+                graphics.DrawString($"{countFiles}", Settings.FontName, color, _windowCordinateX + Settings.PropertiesInfoCoordinateX, Settings.PropertiesCoordinateY + Settings.FontSize * 7, Settings.FontSize);
+                graphics.DrawString("Folders:", Settings.FontName, color, _windowCordinateX, Settings.PropertiesCoordinateY + Settings.FontSize * 8, Settings.FontSize);
+                graphics.DrawString($"{countDirectories}", Settings.FontName, color, _windowCordinateX + Settings.PropertiesInfoCoordinateX, Settings.PropertiesCoordinateY + Settings.FontSize * 8, Settings.FontSize);
+            }
         }
     }
 }
