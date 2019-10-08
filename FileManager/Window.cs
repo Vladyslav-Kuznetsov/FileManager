@@ -1,4 +1,5 @@
 ﻿using NConsoleGraphics;
+using System.IO;
 
 namespace FileManager
 {
@@ -7,18 +8,21 @@ namespace FileManager
         private readonly FolderView _left;
         private readonly FolderView _rigth;
         private readonly ConsoleGraphics _graphics;
+        public FileSystemInfo TempItem;
         public bool IsLeftActive { get; set; }
         public bool IsRightActive { get; set; }
         public bool Exit { get; set; }
+        public bool IsCut { get; set; }
 
         public Window()
         {
             _left = new FolderView(Settings.LeftWindowCoordinateX);
             _rigth = new FolderView(Settings.RigthWindowCoordinateX);
+            _graphics = new ConsoleGraphics();
             IsLeftActive = true;
             IsRightActive = false;
-            _graphics = new ConsoleGraphics();
             Exit = false;
+            IsCut = false;
         }
 
         public void Explorer()

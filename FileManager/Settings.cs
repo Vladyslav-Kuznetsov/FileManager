@@ -18,14 +18,12 @@ namespace FileManager
         public const uint InactiveColor = 0xFF756d6c;
         public const uint BlackColor = 0xFF000000;
         public const int FontSize = 12;
-        
         public const string FontName = "ISOCPEUR";
 
         public static void SetupDefaultConsoleSettings()
         {
             Console.CursorVisible = false;
             Console.WindowHeight = 55;
-            
             Console.WindowWidth = 170;
         }
     }

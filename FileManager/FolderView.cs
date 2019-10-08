@@ -37,6 +37,7 @@ namespace FileManager
             }
             else
             {
+                InitCurrentDirectory();
                 DisplayFolderContent(graphics, color);
 
                 if (_propertiesActive)
@@ -44,7 +45,6 @@ namespace FileManager
                     ShowProperties(graphics, color);
                     _propertiesActive = false;
                 }
-                
             }
         }
 
@@ -77,6 +77,21 @@ namespace FileManager
                 case ConsoleKey.Tab:
                     window.IsLeftActive = !window.IsLeftActive;
                     window.IsRightActive = !window.IsRightActive;
+                    break;
+                case ConsoleKey.F1:
+                    Copy(window);
+                    break;
+                case ConsoleKey.F2:
+                    Cut(window);
+                    break;
+                case ConsoleKey.F3:
+                    Paste(window);
+                    break;
+                case ConsoleKey.F4:
+                    MoveToRoot(_folderContent[_position]);
+                    break;
+                case ConsoleKey.F5:
+                    _currentPath = string.Empty;
                     break;
                 case ConsoleKey.F6 when _currentPath != string.Empty:
                     _propertiesActive = true;
@@ -116,12 +131,13 @@ namespace FileManager
                 if (i == _position)
                 {
                     graphics.FillRectangle(color, _windowCordinateX, coordinateY + 5, Settings.WindowWidth, Settings.FontSize - 1);
+
                     graphics.DrawString($"{_folderContent[i].Name}", Settings.FontName, Settings.BlackColor, _windowCordinateX, coordinateY, Settings.FontSize);
 
                     if (_folderContent[i] is FileInfo file)
                     {
                         graphics.DrawString($"<{file.Extension}>", Settings.FontName, Settings.BlackColor, _windowCordinateX + Settings.ExtensionCoodrinateX, coordinateY, Settings.FontSize);
-                        graphics.DrawString($"{file.Length} Byte", Settings.FontName, Settings.BlackColor, _windowCordinateX + Settings.SizeCoodrinateX, coordinateY, Settings.FontSize);
+                        graphics.DrawString(ConvertByte(file.Length), Settings.FontName, Settings.BlackColor, _windowCordinateX + Settings.SizeCoodrinateX, coordinateY, Settings.FontSize);
                     }
                     else
                     {
@@ -135,7 +151,7 @@ namespace FileManager
                     if (_folderContent[i] is FileInfo file)
                     {
                         graphics.DrawString($"<{file.Extension}>", Settings.FontName, color, _windowCordinateX + Settings.ExtensionCoodrinateX, coordinateY, Settings.FontSize);
-                        graphics.DrawString($"{file.Length} Byte", Settings.FontName, color, _windowCordinateX + Settings.SizeCoodrinateX, coordinateY, Settings.FontSize);
+                        graphics.DrawString(ConvertByte(file.Length), Settings.FontName, color, _windowCordinateX + Settings.SizeCoodrinateX, coordinateY, Settings.FontSize);
                     }
                     else
                     {
@@ -187,10 +203,49 @@ namespace FileManager
             {
                 _currentPath = Path.Combine(_currentPath, folderPath);
                 _currentPath = new DirectoryInfo(_currentPath).FullName;
-                InitCurrentDirectory();
             }
 
             _position = 0;
+        }
+
+        private void Copy(Window window)
+        {
+            window.TempItem = _folderContent[_position];
+        }
+
+        private void Paste(Window window)
+        {
+            if(window.TempItem is FileInfo file)
+            {
+                if(window.IsCut)
+                {
+                    file.MoveTo($@"{ _currentPath}\\{file.Name}");
+                    window.IsCut = false;
+                }
+                else
+                {
+                    file.CopyTo($@"{ _currentPath}\\{file.Name}");
+                } 
+            }
+
+            if(window.TempItem is DirectoryInfo directory)
+            {
+                //if (window.IsCut)
+                //{
+                //    file.MoveTo($@"{ _currentPath}\\{file.Name}");
+                //    window.IsCut = false;
+                //}
+                //else
+                //{
+                //    directory.CopyTo($@"{ _currentPath}\\{file.Name}");
+                //}
+            }
+        }
+
+        private void Cut(Window window)
+        {
+            window.TempItem = _folderContent[_position];
+            window.IsCut = true;
         }
 
         private void ShowProperties(ConsoleGraphics graphics, uint color)
@@ -212,16 +267,16 @@ namespace FileManager
                 graphics.DrawString("Last write time:", Settings.FontName, color, _windowCordinateX, Settings.PropertiesCoordinateY + Settings.FontSize * 5, Settings.FontSize);
                 graphics.DrawString($"{file.LastWriteTime}", Settings.FontName, color, _windowCordinateX + Settings.PropertiesInfoCoordinateX, Settings.PropertiesCoordinateY + Settings.FontSize * 5, Settings.FontSize);
                 graphics.DrawString("Size:", Settings.FontName, color, _windowCordinateX, Settings.PropertiesCoordinateY + Settings.FontSize * 6, Settings.FontSize);
-                graphics.DrawString($"{file.Length} Byte", Settings.FontName, color, _windowCordinateX + Settings.PropertiesInfoCoordinateX, Settings.PropertiesCoordinateY + Settings.FontSize * 6, Settings.FontSize);
+                graphics.DrawString(ConvertByte(file.Length), Settings.FontName, color, _windowCordinateX + Settings.PropertiesInfoCoordinateX, Settings.PropertiesCoordinateY + Settings.FontSize * 6, Settings.FontSize);
             }
 
-            if(_folderContent[_position] is DirectoryInfo directory)
+            if (_folderContent[_position] is DirectoryInfo directory)
             {
                 var currentDirectory = new DirectoryInfo(directory.FullName);
                 var parentDirectory = (directory.Parent.Name == string.Empty) ? directory.Root.Name : directory.Parent.Name;
                 var countFiles = currentDirectory.GetFiles(".", SearchOption.AllDirectories).Count();
                 var countDirectories = currentDirectory.GetDirectories(".", SearchOption.AllDirectories).Count();
-                var sizeDirectory = currentDirectory.GetFiles(".", SearchOption.AllDirectories).Sum(f => f.Length);
+                var sizeFiles = currentDirectory.GetFiles(".", SearchOption.AllDirectories).Sum(f => f.Length);
 
                 graphics.DrawString("Name:", Settings.FontName, color, _windowCordinateX, Settings.PropertiesCoordinateY, Settings.FontSize);
                 graphics.DrawString($"{directory.Name}", Settings.FontName, color, _windowCordinateX + Settings.PropertiesInfoCoordinateX, Settings.PropertiesCoordinateY, Settings.FontSize);
@@ -234,11 +289,48 @@ namespace FileManager
                 graphics.DrawString("Last write time:", Settings.FontName, color, _windowCordinateX, Settings.PropertiesCoordinateY + Settings.FontSize * 5, Settings.FontSize);
                 graphics.DrawString($"{directory.LastWriteTime}", Settings.FontName, color, _windowCordinateX + Settings.PropertiesInfoCoordinateX, Settings.PropertiesCoordinateY + Settings.FontSize * 5, Settings.FontSize);
                 graphics.DrawString("Size:", Settings.FontName, color, _windowCordinateX, Settings.PropertiesCoordinateY + Settings.FontSize * 6, Settings.FontSize);
-                graphics.DrawString($"{sizeDirectory} Byte", Settings.FontName, color, _windowCordinateX + Settings.PropertiesInfoCoordinateX, Settings.PropertiesCoordinateY + Settings.FontSize * 6, Settings.FontSize);
+                graphics.DrawString(ConvertByte(sizeFiles), Settings.FontName, color, _windowCordinateX + Settings.PropertiesInfoCoordinateX, Settings.PropertiesCoordinateY + Settings.FontSize * 6, Settings.FontSize);
                 graphics.DrawString("Files:", Settings.FontName, color, _windowCordinateX, Settings.PropertiesCoordinateY + Settings.FontSize * 7, Settings.FontSize);
                 graphics.DrawString($"{countFiles}", Settings.FontName, color, _windowCordinateX + Settings.PropertiesInfoCoordinateX, Settings.PropertiesCoordinateY + Settings.FontSize * 7, Settings.FontSize);
                 graphics.DrawString("Folders:", Settings.FontName, color, _windowCordinateX, Settings.PropertiesCoordinateY + Settings.FontSize * 8, Settings.FontSize);
                 graphics.DrawString($"{countDirectories}", Settings.FontName, color, _windowCordinateX + Settings.PropertiesInfoCoordinateX, Settings.PropertiesCoordinateY + Settings.FontSize * 8, Settings.FontSize);
+            }
+        }
+
+        private string ConvertByte(long bytes)
+        {
+            var fileSize = string.Empty;
+
+            if (bytes > Math.Pow(2, 30))
+            {
+                fileSize = $"{Math.Round(bytes / Math.Pow(2, 30), 2)} GB";
+            }
+            else if (bytes > Math.Pow(2, 20))
+            {
+                fileSize = $"{Math.Round(bytes / Math.Pow(2, 20), 2)} MB";
+            }
+            else if (bytes > Math.Pow(2, 10))
+            {
+                fileSize = $"{Math.Round(bytes / Math.Pow(2, 10), 2)} KB";
+            }
+            else
+            {
+                fileSize = $"{bytes} Byte";
+            }
+
+            return fileSize;
+        }
+
+        private void MoveToRoot(FileSystemInfo item)
+        {
+            if(item is FileInfo file)
+            {
+                _currentPath = file.Directory.Root.Name;
+            }
+
+            if (item is DirectoryInfo directory)
+            {
+                _currentPath = directory.Root.Name;
             }
         }
     }
