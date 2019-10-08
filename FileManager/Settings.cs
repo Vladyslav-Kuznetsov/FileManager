@@ -17,8 +17,13 @@ namespace FileManager
         public const uint ActiveColor = 0xFFFFFFFF;
         public const uint InactiveColor = 0xFF756d6c;
         public const uint BlackColor = 0xFF000000;
+        public const uint HintsColor = 0xFF9fa818;
+        public const int HintsCoordinateY = 800;
+        public const int HintsWidth = WindowWidth * 2 + 70;
+        public const int HintsHeight = 35;
         public const int FontSize = 12;
         public const string FontName = "ISOCPEUR";
+        public const string Hints = "F1 - copy | F2 - cut | F3 - paste | F4 - root | F5 - list of disks | F6 - properties | F7 - rename | F8 - find |    F9 - new folder";
 
         public static void SetupDefaultConsoleSettings()
         {

@@ -5,7 +5,7 @@
         public static void Main(string[] args)
         {
             Settings.SetupDefaultConsoleSettings();
-            Window window = new Window();
+            Engine window = new Engine();
             window.Explorer();
         }
     }
