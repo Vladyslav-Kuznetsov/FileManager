@@ -5,14 +5,14 @@ using NConsoleGraphics;
 
 namespace FileManager
 {
-  public  class FolderItem : IDirectoryItem
+  public  class FolderItem : DirectoryItem
     {
-        public string Name { get; }
-        public string FullName { get; }
-        public string ParentDirectory { get; }
-        public string Root { get; }
-        public string Extension { get; }
-        public long Size { get; private set;}
+        //public string Name { get; }
+        //public string FullName { get; }
+        //public string ParentDirectory { get; }
+        //public string Root { get; }
+        //public string Extension { get; }
+        //public long Size { get; private set;}
         public int CountFolders { get; private set; }
         public int CountFiles { get; private set; }
 
@@ -20,42 +20,42 @@ namespace FileManager
         {
             Name = directory.Name;
             FullName = directory.FullName;
-            ParentDirectory = (directory.Parent.Name == string.Empty) ? directory.Root.Name : directory.Parent.Name;
+            ParentDirectory = (directory.Parent.Name == string.Empty) ? directory.Root : directory.Parent;
             Root = directory.Root.Name;
             Extension = "<dir>";
         }
 
-        public string ConvertByte(long bytes)
-        {
-            var fileSize = string.Empty;
+        //public string ConvertByte(long bytes)
+        //{
+        //    var fileSize = string.Empty;
 
-            if (bytes > Math.Pow(2, 30))
-            {
-                fileSize = $"{Math.Round(bytes / Math.Pow(2, 30), 2)} GB";
-            }
-            else if (bytes > Math.Pow(2, 20))
-            {
-                fileSize = $"{Math.Round(bytes / Math.Pow(2, 20), 2)} MB";
-            }
-            else if (bytes > Math.Pow(2, 10))
-            {
-                fileSize = $"{Math.Round(bytes / Math.Pow(2, 10), 2)} KB";
-            }
-            else
-            {
-                fileSize = $"{bytes} Byte";
-            }
+        //    if (bytes > Math.Pow(2, 30))
+        //    {
+        //        fileSize = $"{Math.Round(bytes / Math.Pow(2, 30), 2)} GB";
+        //    }
+        //    else if (bytes > Math.Pow(2, 20))
+        //    {
+        //        fileSize = $"{Math.Round(bytes / Math.Pow(2, 20), 2)} MB";
+        //    }
+        //    else if (bytes > Math.Pow(2, 10))
+        //    {
+        //        fileSize = $"{Math.Round(bytes / Math.Pow(2, 10), 2)} KB";
+        //    }
+        //    else
+        //    {
+        //        fileSize = $"{bytes} Byte";
+        //    }
 
-            return fileSize;
-        }
+        //    return fileSize;
+        //}
 
-        public void ShowInfo(ConsoleGraphics graphics, uint color, int coordinateX, int coordinateY)
+        public override void ShowInfo(ConsoleGraphics graphics, uint color, int coordinateX, int coordinateY)
         {
             graphics.DrawString(Name, Settings.FontName, color, coordinateX, coordinateY, Settings.FontSize);
             graphics.DrawString(Extension, Settings.FontName, color, coordinateX + Settings.ExtensionCoodrinateX, coordinateY, Settings.FontSize);
         }
 
-        public void ShowProperties(ConsoleGraphics graphics, int coordinateX)
+        public override void ShowProperties(ConsoleGraphics graphics, int coordinateX)
         {
             DirectoryInfo directory = new DirectoryInfo(FullName);
 
@@ -67,7 +67,7 @@ namespace FileManager
             graphics.DrawString("Name:", Settings.FontName, Settings.ActiveColor, coordinateX, Settings.PropertiesCoordinateY, Settings.FontSize);
             graphics.DrawString(Name, Settings.FontName, Settings.ActiveColor, coordinateX + Settings.PropertiesInfoCoordinateX, Settings.PropertiesCoordinateY, Settings.FontSize);
             graphics.DrawString("Parent directory:", Settings.FontName, Settings.ActiveColor, coordinateX, Settings.PropertiesCoordinateY + Settings.FontSize, Settings.FontSize);
-            graphics.DrawString(ParentDirectory, Settings.FontName, Settings.ActiveColor, coordinateX + Settings.PropertiesInfoCoordinateX, Settings.PropertiesCoordinateY + Settings.FontSize, Settings.FontSize);
+            graphics.DrawString(ParentDirectory.Name, Settings.FontName, Settings.ActiveColor, coordinateX + Settings.PropertiesInfoCoordinateX, Settings.PropertiesCoordinateY + Settings.FontSize, Settings.FontSize);
             graphics.DrawString("Root directory:", Settings.FontName, Settings.ActiveColor, coordinateX, Settings.PropertiesCoordinateY + Settings.FontSize * 2, Settings.FontSize);
             graphics.DrawString(Root, Settings.FontName, Settings.ActiveColor, coordinateX + Settings.PropertiesInfoCoordinateX, Settings.PropertiesCoordinateY + Settings.FontSize * 2, Settings.FontSize);
             graphics.DrawString("Last read time:", Settings.FontName, Settings.ActiveColor, coordinateX, Settings.PropertiesCoordinateY + Settings.FontSize * 4, Settings.FontSize);
@@ -80,6 +80,11 @@ namespace FileManager
             graphics.DrawString($"{CountFiles}", Settings.FontName, Settings.ActiveColor, coordinateX + Settings.PropertiesInfoCoordinateX, Settings.PropertiesCoordinateY + Settings.FontSize * 7, Settings.FontSize);
             graphics.DrawString("Folders:", Settings.FontName, Settings.ActiveColor, coordinateX, Settings.PropertiesCoordinateY + Settings.FontSize * 8, Settings.FontSize);
             graphics.DrawString($"{CountFolders}", Settings.FontName, Settings.ActiveColor, coordinateX + Settings.PropertiesInfoCoordinateX, Settings.PropertiesCoordinateY + Settings.FontSize * 8, Settings.FontSize);
+        }
+
+        public override void Rename(string newName)
+        {
+            Directory.Move(FullName, $@"{ParentDirectory.FullName}\{newName}");
         }
     }
 }

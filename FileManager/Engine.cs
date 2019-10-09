@@ -5,10 +5,10 @@ namespace FileManager
 {
     public class Engine
     {
-        private readonly FolderView _left;
-        private readonly FolderView _rigth;
+        private readonly Explorer _left;
+        private readonly Explorer _rigth;
         private readonly ConsoleGraphics _graphics;
-        public IDirectoryItem TempItem { get; set; }
+        public DirectoryItem TempItem { get; set; }
         public bool IsLeftActive { get; set; }
         public bool IsRightActive { get; set; }
         public bool Exit { get; set; }
@@ -16,8 +16,8 @@ namespace FileManager
 
         public Engine()
         {
-            _left = new FolderView(Settings.LeftWindowCoordinateX);
-            _rigth = new FolderView(Settings.RigthWindowCoordinateX);
+            _left = new Explorer(Settings.LeftWindowCoordinateX);
+            _rigth = new Explorer(Settings.RigthWindowCoordinateX);
             _graphics = new ConsoleGraphics();
             IsLeftActive = true;
             IsRightActive = false;
@@ -25,7 +25,7 @@ namespace FileManager
             IsCut = false;
         }
 
-        public void Explorer()
+        public void Start()
         {
             while (!Exit)
             {
@@ -37,11 +37,11 @@ namespace FileManager
 
                 if (IsLeftActive)
                 {
-                    _left.Navigate(this);
+                    _left.Navigate(this, _graphics);
                 }
                 else
                 {
-                    _rigth.Navigate(this);
+                    _rigth.Navigate(this, _graphics);
                 }
             }
         }

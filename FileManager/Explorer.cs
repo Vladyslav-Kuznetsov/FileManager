@@ -7,20 +7,20 @@ using NConsoleGraphics;
 
 namespace FileManager
 {
-    public class FolderView
+    public class Explorer
     {
         private readonly int _windowCordinateX;
         private readonly List<DriveInfo> _drives;
-        private readonly List<IDirectoryItem> _folderContent;
+        private readonly List<DirectoryItem> _folderContent;
         private int _position;
         private string _currentPath;
         private bool _propertiesActive;
 
-        public FolderView(int windowCordinateX)
+        public Explorer(int windowCordinateX)
         {
             _windowCordinateX = windowCordinateX;
             _currentPath = string.Empty;
-            _folderContent = new List<IDirectoryItem>();
+            _folderContent = new List<DirectoryItem>();
             _drives = new List<DriveInfo>();
             _drives.AddRange(DriveInfo.GetDrives());
             _propertiesActive = false;
@@ -54,7 +54,7 @@ namespace FileManager
             }
         }
 
-        public void Navigate(Engine engine)
+        public void Navigate(Engine engine, ConsoleGraphics graphics)
         {
             ConsoleKey command = Console.ReadKey().Key;
 
@@ -85,13 +85,16 @@ namespace FileManager
                     engine.IsRightActive = !engine.IsRightActive;
                     break;
                 case ConsoleKey.F1:
-                    Copy(engine);
+                    DirectoryItem.Copy(engine, _folderContent[_position]);
+                    //Copy(engine);
                     break;
                 case ConsoleKey.F2:
-                    Cut(engine);
+                    DirectoryItem.Cut(engine, _folderContent[_position]);
+                    //Cut(engine);
                     break;
                 case ConsoleKey.F3:
-                    Paste(engine);
+                    DirectoryItem.Paste(engine, _currentPath);
+                    //Paste(engine);
                     break;
                 case ConsoleKey.F4:
                     _currentPath = _folderContent[_position].Root;
@@ -102,6 +105,12 @@ namespace FileManager
                     break;
                 case ConsoleKey.F6 when _currentPath != string.Empty:
                     _propertiesActive = true;
+                    break;
+                case ConsoleKey.F7:
+                    _folderContent[_position].Rename(EnterName(graphics));
+                    break;
+                case ConsoleKey.F9:
+                    Directory.CreateDirectory($@"{_currentPath}\\{EnterName(graphics)}");
                     break;
                 case ConsoleKey.Escape:
                     engine.Exit = !engine.Exit;
@@ -153,7 +162,7 @@ namespace FileManager
         {
             DirectoryInfo directory = new DirectoryInfo(_currentPath);
             _folderContent.Clear();
-            _folderContent.AddRange(directory.GetDirectories().Select(dir => new FolderItem(dir)).Cast<IDirectoryItem>().Concat(directory.GetFiles().Select(file => new FileItem(file)).Cast<IDirectoryItem>()));
+            _folderContent.AddRange(directory.GetDirectories().Select(dir => new FolderItem(dir)).Cast<DirectoryItem>().Concat(directory.GetFiles().Select(file => new FileItem(file)).Cast<DirectoryItem>()));
         }
 
         private void MoveDown()
@@ -187,60 +196,100 @@ namespace FileManager
             _position = 0;
         }
 
-        private void Copy(Engine engine)
+        private string EnterName(ConsoleGraphics graphics)
         {
-            engine.TempItem = _folderContent[_position];
-        }
+            bool exit = false;
+            List<char> name = new List<char>();
+            string result = string.Empty;
 
-        private void Paste(Engine engine)
-        {
-            if (engine.TempItem is FileItem file)
+            while (!exit)
             {
-                if (engine.IsCut)
+                graphics.FillRectangle(Settings.ActiveColor, 500, 400, 400, 80);
+                graphics.DrawString("Enter name:", "ISOCPEUR", Settings.BlackColor, 510, 400);
+                graphics.DrawRectangle(Settings.BlackColor, 510, 440, 375, 30);
+                graphics.DrawString(result, "ISOCPEUR", Settings.BlackColor, 510, 440);
+                graphics.FlipPages();
+
+                ConsoleKeyInfo key = Console.ReadKey();
+
+                switch (key.Key)
                 {
-                    File.Move(file.FullName, $@"{ _currentPath}\\{file.Name}");
-                    engine.IsCut = false;
+                    case ConsoleKey.Enter:
+                        exit = true;
+                        break;
+                    case ConsoleKey.Backspace when name.Count == 0:
+                        break;
+                    case ConsoleKey.Backspace:
+                        name.RemoveAt(name.Count - 1);
+                        break;
+                    default:
+                        name.Add(key.KeyChar);
+                        break;
                 }
-                else
-                {
-                    File.Copy(file.FullName, $@"{ _currentPath}\\{file.Name}");
-                }
+
+                result = string.Join("", name);
             }
 
-            if (engine.TempItem is FolderItem directory)
-            {
-                if (engine.IsCut)
-                {
-                    CopyFolder(directory.FullName, $@"{_currentPath}\\{directory.Name}");
-                    Directory.Delete(directory.FullName, true);
-                    engine.IsCut = false;
-                }
-                else
-                {
-                    CopyFolder(directory.FullName, $@"{_currentPath}\\{directory.Name}");
-                }
-            }
+            return result;
         }
 
-        private void Cut(Engine engine)
-        {
-            engine.TempItem = _folderContent[_position];
-            engine.IsCut = true;
-        }
+        //private void Copy(Engine engine)
+        //{
+        //    engine.TempItem = _folderContent[_position];
+        //    engine.IsCut = false;
+        //}
 
-        private void CopyFolder(string sourcePath, string destPath)
-        {
-            Directory.CreateDirectory(destPath);
+        //private void Paste(Engine engine)
+        //{
+        //    if (engine.TempItem is FileItem file)
+        //    {
+        //        if (engine.IsCut)
+        //        {
+        //            File.Move(file.FullName, $@"{ _currentPath}\\{file.Name}");
+        //            engine.TempItem = null;
+        //        }
+        //        else
+        //        {
+        //            File.Copy(file.FullName, $@"{ _currentPath}\\{file.Name}");
+        //        }
+        //    }
 
-            foreach (string s1 in Directory.GetFiles(sourcePath))
-            {
-                string s2 = destPath + "\\" + Path.GetFileName(s1);
-                File.Copy(s1, s2);
-            }
-            foreach (string s in Directory.GetDirectories(sourcePath))
-            {
-                CopyFolder(s, destPath + "\\" + Path.GetFileName(s));
-            }
-        }
+        //    if (engine.TempItem is FolderItem directory)
+        //    {
+        //        if (engine.IsCut)
+        //        {
+        //            CopyFolder(directory.FullName, $@"{_currentPath}\\{directory.Name}");
+        //            Directory.Delete(directory.FullName, true);
+        //            engine.TempItem = null;
+        //        }
+        //        else
+        //        {
+        //            CopyFolder(directory.FullName, $@"{_currentPath}\\{directory.Name}");
+        //        }
+        //    }
+
+        //    engine.IsCut = false;
+        //}
+
+        //private void Cut(Engine engine)
+        //{
+        //    engine.TempItem = _folderContent[_position];
+        //    engine.IsCut = true;
+        //}
+
+        //private void CopyFolder(string sourcePath, string destPath)
+        //{
+        //    Directory.CreateDirectory(destPath);
+
+        //    foreach (string s1 in Directory.GetFiles(sourcePath))
+        //    {
+        //        string s2 = destPath + "\\" + Path.GetFileName(s1);
+        //        File.Copy(s1, s2);
+        //    }
+        //    foreach (string s in Directory.GetDirectories(sourcePath))
+        //    {
+        //        CopyFolder(s, destPath + "\\" + Path.GetFileName(s));
+        //    }
+        //}
     }
 }

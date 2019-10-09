@@ -5,8 +5,8 @@
         public static void Main(string[] args)
         {
             Settings.SetupDefaultConsoleSettings();
-            Engine window = new Engine();
-            window.Explorer();
+            Engine engine = new Engine();
+            engine.Start();
         }
     }
 }
