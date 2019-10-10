@@ -4,7 +4,7 @@ using System.IO;
 
 namespace FileManager
 {
-    public abstract class DirectoryItem
+    public abstract class SystemItem
     {
         public string Name { get; protected set; }
         public string FullName { get; protected set; }
@@ -47,13 +47,13 @@ namespace FileManager
             }
         }
 
-        public static void Copy(Engine engine, DirectoryItem item)
+        public static void Copy(Engine engine, SystemItem item)
         {
             engine.TempItem = item;
             engine.IsCut = false;
         }
 
-        public static void Cut(Engine engine, DirectoryItem item)
+        public static void Cut(Engine engine, SystemItem item)
         {
             engine.TempItem = item;
             engine.IsCut = true;

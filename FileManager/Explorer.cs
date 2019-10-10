@@ -11,19 +11,21 @@ namespace FileManager
     {
         private readonly int _windowCordinateX;
         private readonly List<DriveInfo> _drives;
-        private readonly List<DirectoryItem> _folderContent;
+        private readonly List<SystemItem> _folderContent;
         private int _position;
         private string _currentPath;
         private bool _propertiesActive;
+        private bool _isFind;
 
         public Explorer(int windowCordinateX)
         {
             _windowCordinateX = windowCordinateX;
             _currentPath = string.Empty;
-            _folderContent = new List<DirectoryItem>();
+            _folderContent = new List<SystemItem>();
             _drives = new List<DriveInfo>();
-            _drives.AddRange(DriveInfo.GetDrives());
+            _drives.AddRange(DriveInfo.GetDrives().Where(drive => drive.DriveType == DriveType.Fixed));
             _propertiesActive = false;
+            _isFind = false;
         }
 
         public void Show(ConsoleGraphics graphics, bool isActive)
@@ -85,16 +87,13 @@ namespace FileManager
                     engine.IsRightActive = !engine.IsRightActive;
                     break;
                 case ConsoleKey.F1:
-                    DirectoryItem.Copy(engine, _folderContent[_position]);
-                    //Copy(engine);
+                    SystemItem.Copy(engine, _folderContent[_position]);
                     break;
                 case ConsoleKey.F2:
-                    DirectoryItem.Cut(engine, _folderContent[_position]);
-                    //Cut(engine);
+                    SystemItem.Cut(engine, _folderContent[_position]);
                     break;
                 case ConsoleKey.F3:
-                    DirectoryItem.Paste(engine, _currentPath);
-                    //Paste(engine);
+                    SystemItem.Paste(engine, _currentPath);
                     break;
                 case ConsoleKey.F4:
                     _currentPath = _folderContent[_position].Root;
@@ -108,6 +107,10 @@ namespace FileManager
                     break;
                 case ConsoleKey.F7:
                     _folderContent[_position].Rename(EnterName(graphics));
+                    break;
+                case ConsoleKey.F8:
+                    FindFileByName(EnterName(graphics), _currentPath);
+                    ShowIfFileFound(graphics);
                     break;
                 case ConsoleKey.F9:
                     Directory.CreateDirectory($@"{_currentPath}\\{EnterName(graphics)}");
@@ -134,7 +137,7 @@ namespace FileManager
                     graphics.DrawString($"{_drives[i].Name}", Settings.FontName, color, _windowCordinateX, coordinateY, Settings.FontSize);
                 }
 
-                coordinateY += Settings.FontSize;
+                coordinateY += Settings.FontSize + 1;
             }
         }
 
@@ -154,7 +157,7 @@ namespace FileManager
                     _folderContent[i].ShowInfo(graphics, color, _windowCordinateX, coordinateY);
                 }
 
-                coordinateY += Settings.FontSize;
+                coordinateY += Settings.FontSize + 1;
             }
         }
 
@@ -162,7 +165,9 @@ namespace FileManager
         {
             DirectoryInfo directory = new DirectoryInfo(_currentPath);
             _folderContent.Clear();
-            _folderContent.AddRange(directory.GetDirectories().Select(dir => new FolderItem(dir)).Cast<DirectoryItem>().Concat(directory.GetFiles().Select(file => new FileItem(file)).Cast<DirectoryItem>()));
+            //_folderContent.AddRange(directory.GetDirectories().Select(dir => new FolderItem(dir)).Cast<SystemItem>().Concat(directory.GetFiles().Select(file => new FileItem(file)).Cast<SystemItem>()));
+            _folderContent.AddRange(directory.EnumerateDirectories().Where(dir => !dir.Attributes.HasFlag(FileAttributes.Hidden)).Select(dir => new FolderItem(dir)).Cast<SystemItem>().Concat(directory.EnumerateFiles().Where(file => !file.Attributes.HasFlag(FileAttributes.Hidden)).Select(file => new FileItem(file)).Cast<SystemItem>()));
+           
         }
 
         private void MoveDown()
@@ -204,10 +209,10 @@ namespace FileManager
 
             while (!exit)
             {
-                graphics.FillRectangle(Settings.ActiveColor, 500, 400, 400, 80);
-                graphics.DrawString("Enter name:", "ISOCPEUR", Settings.BlackColor, 510, 400);
-                graphics.DrawRectangle(Settings.BlackColor, 510, 440, 375, 30);
-                graphics.DrawString(result, "ISOCPEUR", Settings.BlackColor, 510, 440);
+                graphics.FillRectangle(Settings.ActiveColor, Settings.InputWindowCoordinateX, Settings.InputWindowCoordinateY, Settings.InputWindowWidth, Settings.InputWindowHeiht);
+                graphics.DrawString("Enter name:", "ISOCPEUR", Settings.BlackColor, Settings.InputWindowCoordinateX + 10, Settings.InputWindowCoordinateY);
+                graphics.DrawRectangle(Settings.BlackColor, Settings.InputWindowCoordinateX + 10, Settings.InputWindowCoordinateY + 40, Settings.InputFieldWidth, Settings.InputFieldHeiht);
+                graphics.DrawString(result, "ISOCPEUR", Settings.BlackColor, Settings.InputWindowCoordinateX + 10, Settings.InputWindowCoordinateY + 40);
                 graphics.FlipPages();
 
                 ConsoleKeyInfo key = Console.ReadKey();
@@ -229,67 +234,43 @@ namespace FileManager
 
                 result = string.Join("", name);
             }
-
             return result;
         }
 
-        //private void Copy(Engine engine)
-        //{
-        //    engine.TempItem = _folderContent[_position];
-        //    engine.IsCut = false;
-        //}
+        private void FindFileByName(string name, string currentPath)
+        {
+            DirectoryInfo directory = new DirectoryInfo(currentPath);
 
-        //private void Paste(Engine engine)
-        //{
-        //    if (engine.TempItem is FileItem file)
-        //    {
-        //        if (engine.IsCut)
-        //        {
-        //            File.Move(file.FullName, $@"{ _currentPath}\\{file.Name}");
-        //            engine.TempItem = null;
-        //        }
-        //        else
-        //        {
-        //            File.Copy(file.FullName, $@"{ _currentPath}\\{file.Name}");
-        //        }
-        //    }
+            foreach (var file in directory.EnumerateFiles().Where(f => !f.Attributes.HasFlag(FileAttributes.Hidden)))
+            {
+                if (file.Name.ToLower().Contains(name))
+                {
+                    var col = directory.EnumerateDirectories().Where(dir => !dir.Attributes.HasFlag(FileAttributes.Hidden)).Cast<FileSystemInfo>().Concat(directory.EnumerateFiles().Where(f => !f.Attributes.HasFlag(FileAttributes.Hidden)).Cast<FileSystemInfo>()).ToList();
+                    _currentPath = directory.FullName;
+                    _position = col.IndexOf(col.Where(f => f.Name.ToLower().Contains(name)).First());
+                    _isFind = true;
+                    return;
+                }
+            }
 
-        //    if (engine.TempItem is FolderItem directory)
-        //    {
-        //        if (engine.IsCut)
-        //        {
-        //            CopyFolder(directory.FullName, $@"{_currentPath}\\{directory.Name}");
-        //            Directory.Delete(directory.FullName, true);
-        //            engine.TempItem = null;
-        //        }
-        //        else
-        //        {
-        //            CopyFolder(directory.FullName, $@"{_currentPath}\\{directory.Name}");
-        //        }
-        //    }
+            foreach (var dir in directory.EnumerateDirectories().Where(d => !d.Attributes.HasFlag(FileAttributes.Hidden)))
+            {
+                FindFileByName(name, dir.FullName);
+            }
+        }
 
-        //    engine.IsCut = false;
-        //}
+        private void ShowIfFileFound(ConsoleGraphics graphics)
+        {
+            if (_isFind == false)
+            {
+                graphics.FillRectangle(Settings.ActiveColor, Settings.InputWindowCoordinateX, Settings.InputWindowCoordinateY, Settings.InputWindowWidth, Settings.InputWindowHeiht);
+                graphics.DrawString("File not found:", "ISOCPEUR", Settings.BlackColor, Settings.InputWindowCoordinateX + 10, Settings.InputWindowCoordinateY);
+                graphics.DrawString("Press Enter to continue", "ISOCPEUR", Settings.BlackColor, Settings.InputWindowCoordinateX + 10, Settings.InputWindowCoordinateY + 40);
+                graphics.FlipPages();
+                Console.ReadLine();
+            }
 
-        //private void Cut(Engine engine)
-        //{
-        //    engine.TempItem = _folderContent[_position];
-        //    engine.IsCut = true;
-        //}
-
-        //private void CopyFolder(string sourcePath, string destPath)
-        //{
-        //    Directory.CreateDirectory(destPath);
-
-        //    foreach (string s1 in Directory.GetFiles(sourcePath))
-        //    {
-        //        string s2 = destPath + "\\" + Path.GetFileName(s1);
-        //        File.Copy(s1, s2);
-        //    }
-        //    foreach (string s in Directory.GetDirectories(sourcePath))
-        //    {
-        //        CopyFolder(s, destPath + "\\" + Path.GetFileName(s));
-        //    }
-        //}
+            _isFind = false;
+        }
     }
 }

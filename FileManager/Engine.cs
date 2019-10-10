@@ -8,7 +8,7 @@ namespace FileManager
         private readonly Explorer _left;
         private readonly Explorer _rigth;
         private readonly ConsoleGraphics _graphics;
-        public DirectoryItem TempItem { get; set; }
+        public SystemItem TempItem { get; set; }
         public bool IsLeftActive { get; set; }
         public bool IsRightActive { get; set; }
         public bool Exit { get; set; }
