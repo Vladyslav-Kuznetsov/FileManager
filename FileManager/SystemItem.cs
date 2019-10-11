@@ -1,6 +1,8 @@
 ﻿using NConsoleGraphics;
 using System;
 using System.IO;
+using System.Security.AccessControl;
+using System.Security.Principal;
 
 namespace FileManager
 {
@@ -17,8 +19,11 @@ namespace FileManager
         public abstract void ShowInfo(ConsoleGraphics graphics, uint color, int coordinateX, int coordinateY);
         public abstract void Rename(string newName);
 
-        public static void Paste(Engine engine, string currentPath)
+        public static void Paste(Engine engine, string currentPath, ConsoleGraphics graphics)
         {
+            string message = (engine.IsCut) ? "Moving to:" : "Copy to:";
+            Message.ShowMessage(message, currentPath, graphics);
+
             if (engine.TempItem is FileItem file)
             {
                 if (engine.IsCut)
@@ -57,6 +62,32 @@ namespace FileManager
         {
             engine.TempItem = item;
             engine.IsCut = true;
+        }
+
+        public static bool HasFolderPermission(string destDir)
+        {
+            if (string.IsNullOrEmpty(destDir) || !Directory.Exists(destDir)) return false;
+            try
+            {
+                DirectorySecurity security = Directory.GetAccessControl(destDir);
+                SecurityIdentifier users = new SecurityIdentifier(WellKnownSidType.BuiltinUsersSid, null);
+                foreach (AuthorizationRule rule in security.GetAccessRules(true, true, typeof(SecurityIdentifier)))
+                {
+                    if (rule.IdentityReference == users)
+                    {
+                        FileSystemAccessRule rights = ((FileSystemAccessRule)rule);
+                        if (rights.AccessControlType == AccessControlType.Allow)
+                        {
+                            if (rights.FileSystemRights == (rights.FileSystemRights | FileSystemRights.ReadData)) return true;
+                        }
+                    }
+                }
+                return false;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         protected string ConvertByte(long bytes)

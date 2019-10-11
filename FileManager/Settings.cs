@@ -12,19 +12,19 @@ namespace FileManager
         public const int PropertiesCoordinateY = WindowCoordinateY + WindowHeight + 10;
         public const int PropertiesInfoCoordinateX = 300;
         public const int PropertiesHeight = 120;
-        public const int InputWindowCoordinateX = WindowWidth + 5 - InputWindowWidth / 2;
-        public const int InputWindowCoordinateY = WindowHeight / 2 - InputWindowHeiht / 2;
-        public const int InputWindowWidth = 400;
-        public const int InputWindowHeiht = 80;
-        public const int InputFieldWidth = InputWindowWidth - 25;
-        public const int InputFieldHeiht = 30;
-
+        public const int MessageWindowCoordinateX = WindowWidth + 5 - MessageWindowWidth / 2;
+        public const int MessageWindowCoordinateY = WindowHeight / 2 - MessageWindowHeiht / 2;
+        public const int MessageWindowWidth = 400;
+        public const int MessageWindowHeiht = 80;
+        public const int MessageFieldWidth = MessageWindowWidth - 25;
+        public const int MessageFieldHeiht = 30;
         public const int WindowWidth = 620;
         public const int WindowHeight = 526;
         public const uint ActiveColor = 0xFFFFFFFF;
         public const uint InactiveColor = 0xFF756d6c;
         public const uint BlackColor = 0xFF000000;
         public const uint HintsColor = 0xFF9fa818;
+        public const uint InputMessageColor = 0xFF3781a3;
         public const int HintsCoordinateY = PropertiesCoordinateY + PropertiesHeight + 10;
         public const int HintsWidth = WindowWidth * 2 + 10;
         public const int HintsHeight = 35;

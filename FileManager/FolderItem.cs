@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Linq;
 using NConsoleGraphics;
 
@@ -12,7 +11,6 @@ namespace FileManager
 
         public FolderItem(DirectoryInfo directory)
         {
-            //Name = directory.Name;
             Name = (directory.Name.Length > 45) ? string.Join("", directory.Name.Take(45)) + "..." : directory.Name;
             FullName = directory.FullName;
             ParentDirectory = (directory.Parent.Name == string.Empty) ? directory.Root : directory.Parent;
@@ -29,14 +27,7 @@ namespace FileManager
         public override void ShowProperties(ConsoleGraphics graphics, int coordinateX)
         {
             DirectoryInfo directory = new DirectoryInfo(FullName);
-
-            //Size = directory.GetFiles(".", SearchOption.AllDirectories).Sum(f => f.Length);
-            //CountFolders = directory.GetDirectories(".", SearchOption.AllDirectories).Count();
-            //CountFiles = directory.GetFiles(".", SearchOption.AllDirectories).Count();
-
-            Size = directory.EnumerateFiles(".", SearchOption.AllDirectories).Where(file => !file.Attributes.HasFlag(FileAttributes.Hidden)).Sum(f => f.Length);
-            CountFolders = directory.EnumerateDirectories(".", SearchOption.AllDirectories).Where(dir => !dir.Attributes.HasFlag(FileAttributes.Hidden)).Count();
-            CountFiles = directory.EnumerateFiles(".", SearchOption.AllDirectories).Where(file => !file.Attributes.HasFlag(FileAttributes.Hidden)).Count();
+            GetPropertiesInfo(FullName);
 
             graphics.DrawRectangle(Settings.ActiveColor, coordinateX, Settings.PropertiesCoordinateY, Settings.WindowWidth, Settings.PropertiesHeight);
             graphics.DrawString("Name:", Settings.FontName, Settings.ActiveColor, coordinateX, Settings.PropertiesCoordinateY, Settings.FontSize);
@@ -60,6 +51,25 @@ namespace FileManager
         public override void Rename(string newName)
         {
             Directory.Move(FullName, $@"{ParentDirectory.FullName}\{newName}");
+        }
+
+        private void GetPropertiesInfo(string path)
+        {
+            DirectoryInfo directoryInfo = new DirectoryInfo(path);
+
+           
+                var files = directoryInfo.EnumerateFiles().Where(file => !file.Attributes.HasFlag(FileAttributes.Hidden));
+                var directories = directoryInfo.EnumerateDirectories().Where(dir => !dir.Attributes.HasFlag(FileAttributes.Hidden) && HasFolderWritePermission(dir.FullName));
+
+                Size += files.Sum(f => f.Length);
+                CountFiles += files.Count();
+                CountFolders += directories.Count();
+
+                foreach (var d in directories)
+                {
+                    GetPropertiesInfo(d.FullName);
+                }
+            
         }
     }
 }

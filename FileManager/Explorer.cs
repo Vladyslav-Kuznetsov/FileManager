@@ -74,7 +74,7 @@ namespace FileManager
                 case ConsoleKey.Enter when _folderContent.Any() && (_folderContent[_position] is FolderItem):
                     InFolder(_folderContent[_position].Name);
                     break;
-                case ConsoleKey.Enter when _folderContent[_position] is FileItem:
+                case ConsoleKey.Enter when _folderContent.Any() && _folderContent[_position] is FileItem:
                     Process.Start(_folderContent[_position].FullName);
                     break;
                 case ConsoleKey.Backspace when _currentPath == string.Empty:
@@ -93,7 +93,7 @@ namespace FileManager
                     SystemItem.Cut(engine, _folderContent[_position]);
                     break;
                 case ConsoleKey.F3:
-                    SystemItem.Paste(engine, _currentPath);
+                    SystemItem.Paste(engine, _currentPath, graphics);
                     break;
                 case ConsoleKey.F4:
                     _currentPath = _folderContent[_position].Root;
@@ -109,7 +109,7 @@ namespace FileManager
                     _folderContent[_position].Rename(EnterName(graphics));
                     break;
                 case ConsoleKey.F8:
-                    FindFileByName(EnterName(graphics), _currentPath);
+                    FindFileByName(EnterName(graphics), _currentPath, graphics);
                     ShowIfFileFound(graphics);
                     break;
                 case ConsoleKey.F9:
@@ -165,9 +165,8 @@ namespace FileManager
         {
             DirectoryInfo directory = new DirectoryInfo(_currentPath);
             _folderContent.Clear();
-            //_folderContent.AddRange(directory.GetDirectories().Select(dir => new FolderItem(dir)).Cast<SystemItem>().Concat(directory.GetFiles().Select(file => new FileItem(file)).Cast<SystemItem>()));
-            _folderContent.AddRange(directory.EnumerateDirectories().Where(dir => !dir.Attributes.HasFlag(FileAttributes.Hidden)).Select(dir => new FolderItem(dir)).Cast<SystemItem>().Concat(directory.EnumerateFiles().Where(file => !file.Attributes.HasFlag(FileAttributes.Hidden)).Select(file => new FileItem(file)).Cast<SystemItem>()));
-           
+            _folderContent.AddRange(directory.EnumerateDirectories().Where(dir => SystemItem.HasFolderWritePermission(dir.FullName) && !dir.Attributes.HasFlag(FileAttributes.Hidden)).Select(dir => new FolderItem(dir)).Cast<SystemItem>().Concat(directory.EnumerateFiles().Where(file => !file.Attributes.HasFlag(FileAttributes.Hidden)).Select(file => new FileItem(file)).Cast<SystemItem>()));
+
         }
 
         private void MoveDown()
@@ -209,11 +208,7 @@ namespace FileManager
 
             while (!exit)
             {
-                graphics.FillRectangle(Settings.ActiveColor, Settings.InputWindowCoordinateX, Settings.InputWindowCoordinateY, Settings.InputWindowWidth, Settings.InputWindowHeiht);
-                graphics.DrawString("Enter name:", "ISOCPEUR", Settings.BlackColor, Settings.InputWindowCoordinateX + 10, Settings.InputWindowCoordinateY);
-                graphics.DrawRectangle(Settings.BlackColor, Settings.InputWindowCoordinateX + 10, Settings.InputWindowCoordinateY + 40, Settings.InputFieldWidth, Settings.InputFieldHeiht);
-                graphics.DrawString(result, "ISOCPEUR", Settings.BlackColor, Settings.InputWindowCoordinateX + 10, Settings.InputWindowCoordinateY + 40);
-                graphics.FlipPages();
+                Message.ShowMessage("Enter name:", result, graphics);
 
                 ConsoleKeyInfo key = Console.ReadKey();
 
@@ -237,25 +232,29 @@ namespace FileManager
             return result;
         }
 
-        private void FindFileByName(string name, string currentPath)
+        private void FindFileByName(string name, string currentPath, ConsoleGraphics graphics)
         {
             DirectoryInfo directory = new DirectoryInfo(currentPath);
+            Message.ShowMessage("Search in folder:", directory.Name, graphics);
 
-            foreach (var file in directory.EnumerateFiles().Where(f => !f.Attributes.HasFlag(FileAttributes.Hidden)))
+            if(SystemItem.HasFolderWritePermission(directory.FullName))
             {
-                if (file.Name.ToLower().Contains(name))
+                foreach (var file in directory.EnumerateFiles().Where(f => !f.Attributes.HasFlag(FileAttributes.Hidden)))
                 {
-                    var col = directory.EnumerateDirectories().Where(dir => !dir.Attributes.HasFlag(FileAttributes.Hidden)).Cast<FileSystemInfo>().Concat(directory.EnumerateFiles().Where(f => !f.Attributes.HasFlag(FileAttributes.Hidden)).Cast<FileSystemInfo>()).ToList();
-                    _currentPath = directory.FullName;
-                    _position = col.IndexOf(col.Where(f => f.Name.ToLower().Contains(name)).First());
-                    _isFind = true;
-                    return;
+                    if (file.Name.ToLower().Contains(name))
+                    {
+                        var col = directory.EnumerateDirectories().Where(dir => !dir.Attributes.HasFlag(FileAttributes.Hidden)).Cast<FileSystemInfo>().Concat(directory.EnumerateFiles().Where(f => !f.Attributes.HasFlag(FileAttributes.Hidden)).Cast<FileSystemInfo>()).ToList();
+                        _currentPath = directory.FullName;
+                        _position = col.IndexOf(col.Where(f => f.Name.ToLower().Contains(name)).First());
+                        _isFind = true;
+                        return;
+                    }
                 }
-            }
 
-            foreach (var dir in directory.EnumerateDirectories().Where(d => !d.Attributes.HasFlag(FileAttributes.Hidden)))
-            {
-                FindFileByName(name, dir.FullName);
+                foreach (var dir in directory.EnumerateDirectories().Where(d => !d.Attributes.HasFlag(FileAttributes.Hidden)))
+                {
+                    FindFileByName(name, dir.FullName, graphics);
+                }
             }
         }
 
@@ -263,10 +262,7 @@ namespace FileManager
         {
             if (_isFind == false)
             {
-                graphics.FillRectangle(Settings.ActiveColor, Settings.InputWindowCoordinateX, Settings.InputWindowCoordinateY, Settings.InputWindowWidth, Settings.InputWindowHeiht);
-                graphics.DrawString("File not found:", "ISOCPEUR", Settings.BlackColor, Settings.InputWindowCoordinateX + 10, Settings.InputWindowCoordinateY);
-                graphics.DrawString("Press Enter to continue", "ISOCPEUR", Settings.BlackColor, Settings.InputWindowCoordinateX + 10, Settings.InputWindowCoordinateY + 40);
-                graphics.FlipPages();
+                Message.ShowMessage("File not found:", "Press Enter to continue", graphics);
                 Console.ReadLine();
             }
 

@@ -53,6 +53,7 @@
     <Compile Include="FileItem.cs" />
     <Compile Include="FolderItem.cs" />
     <Compile Include="Explorer.cs" />
+    <Compile Include="Message.cs" />
     <Compile Include="SystemItem.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

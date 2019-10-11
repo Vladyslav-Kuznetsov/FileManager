@@ -1,5 +1,4 @@
 ﻿using NConsoleGraphics;
-using System.IO;
 
 namespace FileManager
 {

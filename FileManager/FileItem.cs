@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Linq;
 using NConsoleGraphics;
 
@@ -9,7 +8,6 @@ namespace FileManager
     {
         public FileItem(FileInfo file)
         {
-            //Name = file.Name;
             Name = (file.Name.Length > 45) ? string.Join("", file.Name.Take(45)) + "..." : file.Name;
             FullName = file.FullName;
             ParentDirectory = file.Directory;
