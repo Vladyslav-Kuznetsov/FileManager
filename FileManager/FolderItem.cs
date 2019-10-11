@@ -59,7 +59,7 @@ namespace FileManager
 
            
                 var files = directoryInfo.EnumerateFiles().Where(file => !file.Attributes.HasFlag(FileAttributes.Hidden));
-                var directories = directoryInfo.EnumerateDirectories().Where(dir => !dir.Attributes.HasFlag(FileAttributes.Hidden) && HasFolderWritePermission(dir.FullName));
+                var directories = directoryInfo.EnumerateDirectories().Where(dir => !dir.Attributes.HasFlag(FileAttributes.Hidden) && HasFolderPermission(dir.FullName));
 
                 Size += files.Sum(f => f.Length);
                 CountFiles += files.Count();

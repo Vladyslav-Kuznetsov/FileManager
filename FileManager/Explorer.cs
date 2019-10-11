@@ -165,7 +165,7 @@ namespace FileManager
         {
             DirectoryInfo directory = new DirectoryInfo(_currentPath);
             _folderContent.Clear();
-            _folderContent.AddRange(directory.EnumerateDirectories().Where(dir => SystemItem.HasFolderWritePermission(dir.FullName) && !dir.Attributes.HasFlag(FileAttributes.Hidden)).Select(dir => new FolderItem(dir)).Cast<SystemItem>().Concat(directory.EnumerateFiles().Where(file => !file.Attributes.HasFlag(FileAttributes.Hidden)).Select(file => new FileItem(file)).Cast<SystemItem>()));
+            _folderContent.AddRange(directory.EnumerateDirectories().Where(dir => SystemItem.HasFolderPermission(dir.FullName) && !dir.Attributes.HasFlag(FileAttributes.Hidden)).Select(dir => new FolderItem(dir)).Cast<SystemItem>().Concat(directory.EnumerateFiles().Where(file => !file.Attributes.HasFlag(FileAttributes.Hidden)).Select(file => new FileItem(file)).Cast<SystemItem>()));
 
         }
 
@@ -237,7 +237,7 @@ namespace FileManager
             DirectoryInfo directory = new DirectoryInfo(currentPath);
             Message.ShowMessage("Search in folder:", directory.Name, graphics);
 
-            if(SystemItem.HasFolderWritePermission(directory.FullName))
+            if(SystemItem.HasFolderPermission(directory.FullName))
             {
                 foreach (var file in directory.EnumerateFiles().Where(f => !f.Attributes.HasFlag(FileAttributes.Hidden)))
                 {
