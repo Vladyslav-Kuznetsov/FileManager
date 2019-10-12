@@ -10,13 +10,11 @@ namespace FileManager
         public int CountFolders { get; private set; }
         public int CountFiles { get; private set; }
 
-        public FolderItem(DirectoryInfo directory)
+
+        public FolderItem(DirectoryInfo directory) :
+            base((directory.Name.Length > 45) ? string.Join("", directory.Name.Take(45)) + "..." : directory.Name, directory.FullName, (directory.Parent.Name == string.Empty) ? directory.Root : directory.Parent, directory.Root.Name, "<dir>", directory.LastAccessTime, directory.LastWriteTime)
         {
-            Name = (directory.Name.Length > 45) ? string.Join("", directory.Name.Take(45)) + "..." : directory.Name;
-            FullName = directory.FullName;
-            ParentDirectory = (directory.Parent.Name == string.Empty) ? directory.Root : directory.Parent;
-            Root = directory.Root.Name;
-            Extension = "<dir>";
+
         }
 
         public override void ShowInfo(ConsoleGraphics graphics, uint color, int coordinateX, int coordinateY)
@@ -27,29 +25,16 @@ namespace FileManager
 
         public override void ShowProperties(ConsoleGraphics graphics)
         {
-            Message.ShowMessage("Property definition process in progress", "Please, wait", graphics);
-            DirectoryInfo directory = new DirectoryInfo(FullName);
-            GetPropertiesInfo(directory);
-            graphics.FillRectangle(Settings.ActiveColor, Settings.PropertiesCoordinateX, Settings.PropertiesCoordinateY, Settings.PropertiesWidth, Settings.PropertiesHeight);
-            graphics.DrawString("Name:", Settings.FontName, Settings.BlackColor, Settings.PropertiesCoordinateX, Settings.PropertiesCoordinateY, Settings.FontSize);
-            graphics.DrawString(Name, Settings.FontName, Settings.BlackColor, Settings.PropertiesCoordinateX + Settings.PropertiesInfoCoordinateX, Settings.PropertiesCoordinateY, Settings.FontSize);
-            graphics.DrawString("Parent directory:", Settings.FontName, Settings.BlackColor, Settings.PropertiesCoordinateX, Settings.PropertiesCoordinateY + Settings.FontSize + 1, Settings.FontSize);
-            graphics.DrawString(ParentDirectory.Name, Settings.FontName, Settings.BlackColor, Settings.PropertiesCoordinateX + Settings.PropertiesInfoCoordinateX, Settings.PropertiesCoordinateY + Settings.FontSize + 1, Settings.FontSize);
-            graphics.DrawString("Root directory:", Settings.FontName, Settings.BlackColor, Settings.PropertiesCoordinateX, Settings.PropertiesCoordinateY + (Settings.FontSize * 2) + 1, Settings.FontSize);
-            graphics.DrawString(Root, Settings.FontName, Settings.BlackColor, Settings.PropertiesCoordinateX + Settings.PropertiesInfoCoordinateX, Settings.PropertiesCoordinateY + (Settings.FontSize * 2) + 1, Settings.FontSize);
-            graphics.DrawString("Last read time:", Settings.FontName, Settings.BlackColor, Settings.PropertiesCoordinateX, Settings.PropertiesCoordinateY + (Settings.FontSize * 3) + 1, Settings.FontSize);
-            graphics.DrawString($"{directory.LastAccessTime}", Settings.FontName, Settings.BlackColor, Settings.PropertiesCoordinateX + Settings.PropertiesInfoCoordinateX, Settings.PropertiesCoordinateY + (Settings.FontSize * 3) + 1, Settings.FontSize);
-            graphics.DrawString("Last write time:", Settings.FontName, Settings.BlackColor, Settings.PropertiesCoordinateX, Settings.PropertiesCoordinateY + (Settings.FontSize * 4) + 1, Settings.FontSize);
-            graphics.DrawString($"{directory.LastWriteTime}", Settings.FontName, Settings.BlackColor, Settings.PropertiesCoordinateX + Settings.PropertiesInfoCoordinateX, Settings.PropertiesCoordinateY + (Settings.FontSize * 4) + 1, Settings.FontSize);
+            base.ShowProperties(graphics);
+            GetPropertiesInfo(FullName);
+
             graphics.DrawString("Size:", Settings.FontName, Settings.BlackColor, Settings.PropertiesCoordinateX, Settings.PropertiesCoordinateY + (Settings.FontSize * 5) + 1, Settings.FontSize);
             graphics.DrawString(ConvertByte(Size), Settings.FontName, Settings.BlackColor, Settings.PropertiesCoordinateX + Settings.PropertiesInfoCoordinateX, Settings.PropertiesCoordinateY + (Settings.FontSize * 5) + 1, Settings.FontSize);
             graphics.DrawString("Files:", Settings.FontName, Settings.BlackColor, Settings.PropertiesCoordinateX, Settings.PropertiesCoordinateY + (Settings.FontSize * 6) + 1, Settings.FontSize);
             graphics.DrawString($"{CountFiles}", Settings.FontName, Settings.BlackColor, Settings.PropertiesCoordinateX + Settings.PropertiesInfoCoordinateX, Settings.PropertiesCoordinateY + (Settings.FontSize * 6) + 1, Settings.FontSize);
             graphics.DrawString("Folders:", Settings.FontName, Settings.BlackColor, Settings.PropertiesCoordinateX, Settings.PropertiesCoordinateY + (Settings.FontSize * 7) + 1, Settings.FontSize);
             graphics.DrawString($"{CountFolders}", Settings.FontName, Settings.BlackColor, Settings.PropertiesCoordinateX + Settings.PropertiesInfoCoordinateX, Settings.PropertiesCoordinateY + (Settings.FontSize * 7) + 1, Settings.FontSize);
-            graphics.DrawString("Press Enter to continue :", Settings.FontName, Settings.BlackColor, Settings.PropertiesCoordinateX, Settings.PropertiesCoordinateY + (Settings.FontSize * 9) + 1, Settings.FontSize + 3);
             graphics.FlipPages();
-
             Message.CloseMessage();
         }
 
@@ -58,8 +43,9 @@ namespace FileManager
             Directory.Move(FullName, $@"{ParentDirectory.FullName}\{newName}");
         }
 
-        private void GetPropertiesInfo(DirectoryInfo directoryInfo)
+        private void GetPropertiesInfo(string path)
         {
+            DirectoryInfo directoryInfo = new DirectoryInfo(path);
             var files = directoryInfo.EnumerateFiles().Where(file => !file.Attributes.HasFlag(FileAttributes.Hidden));
             var directories = directoryInfo.EnumerateDirectories().Where(dir => !dir.Attributes.HasFlag(FileAttributes.Hidden) && HasFolderPermission(dir));
 
@@ -69,7 +55,7 @@ namespace FileManager
 
             foreach (var d in directories)
             {
-                GetPropertiesInfo(d);
+                GetPropertiesInfo(d.FullName);
             }
         }
     }

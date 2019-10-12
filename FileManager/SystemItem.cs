@@ -8,16 +8,45 @@ namespace FileManager
 {
     public abstract class SystemItem
     {
-        public string Name { get; protected set; }
-        public string FullName { get; protected set; }
-        public DirectoryInfo ParentDirectory { get; protected set; }
-        public string Root { get; protected set; }
-        public string Extension { get; protected set; }
+        public string Name { get;  }
+        public string FullName { get; }
+        public DirectoryInfo ParentDirectory { get;}
+        public string Root { get;}
+        public string Extension { get;}
+        public DateTime LastAccessTime { get;}
+        public DateTime LastWriteTime { get;}
         public long Size { get; protected set; }
 
-        public abstract void ShowProperties(ConsoleGraphics graphics);
+        public SystemItem(string name, string fullName, DirectoryInfo parentDirectory, string root, string extension, DateTime lastAccessTime, DateTime lastWriteTime)
+        {
+            Name = name;
+            FullName = fullName;
+            ParentDirectory = parentDirectory;
+            Root = root;
+            Extension = extension;
+            LastAccessTime = lastAccessTime;
+            LastWriteTime = lastWriteTime;
+        }
+
         public abstract void ShowInfo(ConsoleGraphics graphics, uint color, int coordinateX, int coordinateY);
         public abstract void Rename(string newName);
+        public virtual void ShowProperties(ConsoleGraphics graphics)
+        {
+            Message.ShowMessage("Property definition process in progress", "Please, wait", graphics);
+
+            graphics.FillRectangle(Settings.ActiveColor, Settings.PropertiesCoordinateX, Settings.PropertiesCoordinateY, Settings.PropertiesWidth, Settings.PropertiesHeight);
+            graphics.DrawString("Name:", Settings.FontName, Settings.BlackColor, Settings.PropertiesCoordinateX, Settings.PropertiesCoordinateY, Settings.FontSize);
+            graphics.DrawString(Name, Settings.FontName, Settings.BlackColor, Settings.PropertiesCoordinateX + Settings.PropertiesInfoCoordinateX, Settings.PropertiesCoordinateY, Settings.FontSize);
+            graphics.DrawString("Parent directory:", Settings.FontName, Settings.BlackColor, Settings.PropertiesCoordinateX, Settings.PropertiesCoordinateY + Settings.FontSize + 1, Settings.FontSize);
+            graphics.DrawString(ParentDirectory.Name, Settings.FontName, Settings.BlackColor, Settings.PropertiesCoordinateX + Settings.PropertiesInfoCoordinateX, Settings.PropertiesCoordinateY + Settings.FontSize + 1, Settings.FontSize);
+            graphics.DrawString("Root directory:", Settings.FontName, Settings.BlackColor, Settings.PropertiesCoordinateX, Settings.PropertiesCoordinateY + (Settings.FontSize * 2) + 1, Settings.FontSize);
+            graphics.DrawString(Root, Settings.FontName, Settings.BlackColor, Settings.PropertiesCoordinateX + Settings.PropertiesInfoCoordinateX, Settings.PropertiesCoordinateY + (Settings.FontSize * 2) + 1, Settings.FontSize);
+            graphics.DrawString("Last read time:", Settings.FontName, Settings.BlackColor, Settings.PropertiesCoordinateX, Settings.PropertiesCoordinateY + (Settings.FontSize * 3) + 1, Settings.FontSize);
+            graphics.DrawString($"{LastAccessTime}", Settings.FontName, Settings.BlackColor, Settings.PropertiesCoordinateX + Settings.PropertiesInfoCoordinateX, Settings.PropertiesCoordinateY + (Settings.FontSize * 3) + 1, Settings.FontSize);
+            graphics.DrawString("Last write time:", Settings.FontName, Settings.BlackColor, Settings.PropertiesCoordinateX, Settings.PropertiesCoordinateY + (Settings.FontSize * 4) + 1, Settings.FontSize);
+            graphics.DrawString($"{LastWriteTime}", Settings.FontName, Settings.BlackColor, Settings.PropertiesCoordinateX + Settings.PropertiesInfoCoordinateX, Settings.PropertiesCoordinateY + (Settings.FontSize * 4) + 1, Settings.FontSize);
+            graphics.DrawString("Press Enter to continue :", Settings.FontName, Settings.BlackColor, Settings.PropertiesCoordinateX, Settings.PropertiesCoordinateY + (Settings.FontSize * 9) + 1, Settings.FontSize + 3);
+        }
 
         public static void Paste(Engine engine, string currentPath, ConsoleGraphics graphics)
         {
