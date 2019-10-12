@@ -9,23 +9,22 @@ namespace FileManager
         public const int LeftWindowCoordinateX = 10;
         public const int RigthWindowCoordinateX = LeftWindowCoordinateX + WindowWidth + 10;
         public const int WindowCoordinateY = 10;
-        public const int PropertiesCoordinateY = WindowCoordinateY + WindowHeight + 10;
-        public const int PropertiesInfoCoordinateX = 300;
-        public const int PropertiesHeight = 120;
-        public const int MessageWindowCoordinateX = WindowWidth + 5 - MessageWindowWidth / 2;
-        public const int MessageWindowCoordinateY = WindowHeight / 2 - MessageWindowHeiht / 2;
-        public const int MessageWindowWidth = 400;
-        public const int MessageWindowHeiht = 80;
-        public const int MessageFieldWidth = MessageWindowWidth - 25;
-        public const int MessageFieldHeiht = 30;
         public const int WindowWidth = 620;
         public const int WindowHeight = 526;
+        public const int PropertiesCoordinateX = WindowWidth + 5 - PropertiesWidth / 2;
+        public const int PropertiesCoordinateY = WindowHeight / 2 - PropertiesHeight / 2;
+        public const int PropertiesInfoCoordinateX = 220;
+        public const int PropertiesWidth = 600;
+        public const int PropertiesHeight = 140;
+        public const int MessageWindowCoordinateX = WindowWidth + 5 - MessageWindowWidth / 2;
+        public const int MessageWindowCoordinateY = WindowHeight / 2 - MessageWindowHeiht / 2;
+        public const int MessageWindowWidth = 600;
+        public const int MessageWindowHeiht = 80;
         public const uint ActiveColor = 0xFFFFFFFF;
         public const uint InactiveColor = 0xFF756d6c;
         public const uint BlackColor = 0xFF000000;
         public const uint HintsColor = 0xFF9fa818;
-        public const uint InputMessageColor = 0xFF3781a3;
-        public const int HintsCoordinateY = PropertiesCoordinateY + PropertiesHeight + 10;
+        public const int HintsCoordinateY = WindowCoordinateY + WindowHeight + 10;
         public const int HintsWidth = WindowWidth * 2 + 10;
         public const int HintsHeight = 35;
         public const int FontSize = 12;
@@ -35,7 +34,7 @@ namespace FileManager
         public static void SetupDefaultConsoleSettings()
         {
             Console.CursorVisible = false;
-            Console.WindowHeight = 45;
+            Console.WindowHeight = 37;
             Console.WindowWidth = 157;
             Console.SetBufferSize(Console.WindowWidth, Console.WindowHeight);
         }

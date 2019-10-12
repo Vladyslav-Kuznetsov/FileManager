@@ -15,7 +15,7 @@ namespace FileManager
         public string Extension { get; protected set; }
         public long Size { get; protected set; }
 
-        public abstract void ShowProperties(ConsoleGraphics graphics, int coordinateX);
+        public abstract void ShowProperties(ConsoleGraphics graphics);
         public abstract void ShowInfo(ConsoleGraphics graphics, uint color, int coordinateX, int coordinateY);
         public abstract void Rename(string newName);
 
@@ -26,28 +26,45 @@ namespace FileManager
 
             if (engine.TempItem is FileItem file)
             {
-                if (engine.IsCut)
+                try
                 {
-                    File.Move(file.FullName, $@"{ currentPath}\\{file.Name}");
-                    engine.TempItem = null;
+                    if (engine.IsCut)
+                    {
+                        File.Move(file.FullName, $@"{ currentPath}\{file.Name}");
+                        engine.TempItem = null;
+                    }
+                    else
+                    {
+                        File.Copy(file.FullName, $@"{ currentPath}\{file.Name}");
+                    }
                 }
-                else
+                catch (IOException)
                 {
-                    File.Copy(file.FullName, $@"{ currentPath}\\{file.Name}");
+                    Message.ShowMessage("A file with the same name already exists.", "Press Enter to continue", graphics);
+                    Message.CloseMessage();
                 }
+
             }
 
             if (engine.TempItem is FolderItem directory)
             {
-                if (engine.IsCut)
+                try
                 {
-                    CopyFolder(directory.FullName, $@"{currentPath}\\{directory.Name}");
-                    Directory.Delete(directory.FullName, true);
-                    engine.TempItem = null;
+                    if (engine.IsCut)
+                    {
+                        CopyFolder(directory.FullName, $@"{currentPath}\{directory.Name}");
+                        Directory.Delete(directory.FullName, true);
+                        engine.TempItem = null;
+                    }
+                    else
+                    {
+                        CopyFolder(directory.FullName, $@"{currentPath}\{directory.Name}");
+                    }
                 }
-                else
+                catch (IOException)
                 {
-                    CopyFolder(directory.FullName, $@"{currentPath}\\{directory.Name}");
+                    Message.ShowMessage("A folder with the same name already exists.", "Press Enter to continue", graphics);
+                    Message.CloseMessage();
                 }
             }
         }
@@ -64,24 +81,29 @@ namespace FileManager
             engine.IsCut = true;
         }
 
-        public static bool HasFolderPermission(string destDir)
+        public static bool HasFolderPermission(DirectoryInfo directoryInfo)
         {
-            if (string.IsNullOrEmpty(destDir) || !Directory.Exists(destDir)) return false;
             try
             {
-                DirectorySecurity security = Directory.GetAccessControl(destDir);
+                DirectorySecurity security = directoryInfo.GetAccessControl();
                 SecurityIdentifier users = new SecurityIdentifier(WellKnownSidType.BuiltinUsersSid, null);
+
                 foreach (AuthorizationRule rule in security.GetAccessRules(true, true, typeof(SecurityIdentifier)))
                 {
                     if (rule.IdentityReference == users)
                     {
-                        FileSystemAccessRule rights = ((FileSystemAccessRule)rule);
+                        FileSystemAccessRule rights = (FileSystemAccessRule)rule;
+
                         if (rights.AccessControlType == AccessControlType.Allow)
                         {
-                            if (rights.FileSystemRights == (rights.FileSystemRights | FileSystemRights.ReadData)) return true;
+                            if (rights.FileSystemRights == (rights.FileSystemRights | FileSystemRights.ReadData))
+                            {
+                                return true;
+                            }
                         }
                     }
                 }
+
                 return false;
             }
             catch

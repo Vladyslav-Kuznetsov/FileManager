@@ -14,7 +14,6 @@ namespace FileManager
         private readonly List<SystemItem> _folderContent;
         private int _position;
         private string _currentPath;
-        private bool _propertiesActive;
         private bool _isFind;
 
         public Explorer(int windowCordinateX)
@@ -24,7 +23,6 @@ namespace FileManager
             _folderContent = new List<SystemItem>();
             _drives = new List<DriveInfo>();
             _drives.AddRange(DriveInfo.GetDrives().Where(drive => drive.DriveType == DriveType.Fixed));
-            _propertiesActive = false;
             _isFind = false;
         }
 
@@ -40,25 +38,14 @@ namespace FileManager
             else
             {
                 InitCurrentDirectory();
-
-                if (_position > _folderContent.Count - 1)
-                {
-                    _position--;
-                }
-
+                CheckPosition();
                 DisplayFolderContent(graphics, color);
-
-                if (_propertiesActive)
-                {
-                    _folderContent[_position].ShowProperties(graphics, _windowCordinateX);
-                    _propertiesActive = false;
-                }
             }
         }
 
         public void Navigate(Engine engine, ConsoleGraphics graphics)
         {
-            ConsoleKey command = Console.ReadKey().Key;
+            ConsoleKey command = Console.ReadKey(true).Key;
 
             switch (command)
             {
@@ -103,17 +90,17 @@ namespace FileManager
                     _position = 0;
                     break;
                 case ConsoleKey.F6 when _currentPath != string.Empty:
-                    _propertiesActive = true;
+                    _folderContent[_position].ShowProperties(graphics);
                     break;
                 case ConsoleKey.F7:
                     _folderContent[_position].Rename(EnterName(graphics));
                     break;
-                case ConsoleKey.F8:
+                case ConsoleKey.F8 when _currentPath != string.Empty:
                     FindFileByName(EnterName(graphics), _currentPath, graphics);
                     ShowIfFileFound(graphics);
                     break;
                 case ConsoleKey.F9:
-                    Directory.CreateDirectory($@"{_currentPath}\\{EnterName(graphics)}");
+                    Directory.CreateDirectory($@"{_currentPath}\{EnterName(graphics)}");
                     break;
                 case ConsoleKey.Escape:
                     engine.Exit = !engine.Exit;
@@ -165,8 +152,20 @@ namespace FileManager
         {
             DirectoryInfo directory = new DirectoryInfo(_currentPath);
             _folderContent.Clear();
-            _folderContent.AddRange(directory.EnumerateDirectories().Where(dir => SystemItem.HasFolderPermission(dir.FullName) && !dir.Attributes.HasFlag(FileAttributes.Hidden)).Select(dir => new FolderItem(dir)).Cast<SystemItem>().Concat(directory.EnumerateFiles().Where(file => !file.Attributes.HasFlag(FileAttributes.Hidden)).Select(file => new FileItem(file)).Cast<SystemItem>()));
+            _folderContent.AddRange(directory.EnumerateDirectories().Where(dir => SystemItem.HasFolderPermission(dir) && !dir.Attributes.HasFlag(FileAttributes.Hidden)).Select(dir => new FolderItem(dir)).Cast<SystemItem>().Concat(directory.EnumerateFiles().Where(file => !file.Attributes.HasFlag(FileAttributes.Hidden)).Select(file => new FileItem(file)).Cast<SystemItem>()));
 
+        }
+
+        private void CheckPosition()
+        {
+            if (_position > _folderContent.Count - 1)
+            {
+                _position--;
+            }
+            else if(_position < 0)
+            {
+                _position++;
+            }
         }
 
         private void MoveDown()
@@ -209,8 +208,7 @@ namespace FileManager
             while (!exit)
             {
                 Message.ShowMessage("Enter name:", result, graphics);
-
-                ConsoleKeyInfo key = Console.ReadKey();
+                ConsoleKeyInfo key = Console.ReadKey(true);
 
                 switch (key.Key)
                 {
@@ -237,7 +235,7 @@ namespace FileManager
             DirectoryInfo directory = new DirectoryInfo(currentPath);
             Message.ShowMessage("Search in folder:", directory.Name, graphics);
 
-            if(SystemItem.HasFolderPermission(directory.FullName))
+            if(SystemItem.HasFolderPermission(directory))
             {
                 foreach (var file in directory.EnumerateFiles().Where(f => !f.Attributes.HasFlag(FileAttributes.Hidden)))
                 {
@@ -263,7 +261,7 @@ namespace FileManager
             if (_isFind == false)
             {
                 Message.ShowMessage("File not found:", "Press Enter to continue", graphics);
-                Console.ReadLine();
+                Message.CloseMessage();
             }
 
             _isFind = false;
