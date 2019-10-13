@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Linq;
 using NConsoleGraphics;
 
@@ -10,11 +9,9 @@ namespace FileManager
         public int CountFolders { get; private set; }
         public int CountFiles { get; private set; }
 
-
         public FolderItem(DirectoryInfo directory) :
             base((directory.Name.Length > 45) ? string.Join("", directory.Name.Take(45)) + "..." : directory.Name, directory.FullName, (directory.Parent.Name == string.Empty) ? directory.Root : directory.Parent, directory.Root.Name, "<dir>", directory.LastAccessTime, directory.LastWriteTime)
         {
-
         }
 
         public override void ShowInfo(ConsoleGraphics graphics, uint color, int coordinateX, int coordinateY)

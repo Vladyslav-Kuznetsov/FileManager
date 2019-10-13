@@ -30,6 +30,7 @@ namespace FileManager
 
         public abstract void ShowInfo(ConsoleGraphics graphics, uint color, int coordinateX, int coordinateY);
         public abstract void Rename(string newName);
+
         public virtual void ShowProperties(ConsoleGraphics graphics)
         {
             Message.ShowMessage("Property definition process in progress", "Please, wait", graphics);
@@ -72,7 +73,6 @@ namespace FileManager
                     Message.ShowMessage("A file with the same name already exists.", "Press Enter to continue", graphics);
                     Message.CloseMessage();
                 }
-
             }
 
             if (engine.TempItem is FolderItem directory)
@@ -174,6 +174,7 @@ namespace FileManager
                 string resultFilePath = destPath + "\\" + Path.GetFileName(currentFilePath);
                 File.Copy(currentFilePath, resultFilePath);
             }
+
             foreach (string folderPath in Directory.GetDirectories(sourcePath))
             {
                 CopyFolder(folderPath, destPath + "\\" + Path.GetFileName(folderPath));

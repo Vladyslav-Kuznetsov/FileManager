@@ -28,6 +28,7 @@ namespace FileManager
         public const int HintsWidth = WindowWidth * 2 + 10;
         public const int HintsHeight = 35;
         public const int FontSize = 12;
+        public const int NumberOfDisplayedStrings = 40;
         public const string FontName = "ISOCPEUR";
         public const string Hints = "F1 - copy | F2 - cut | F3 - paste | F4 - root | F5 - list of disks | F6 - properties | F7 - rename | F8 - find | F9 - new folder";
 

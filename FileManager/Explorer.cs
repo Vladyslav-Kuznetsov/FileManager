@@ -12,6 +12,8 @@ namespace FileManager
         private readonly int _windowCordinateX;
         private readonly List<DriveInfo> _drives;
         private readonly List<SystemItem> _folderContent;
+        private int _startPosition;
+        private int _endPosition;
         private int _position;
         private string _currentPath;
         private bool _isFind;
@@ -131,8 +133,9 @@ namespace FileManager
         private void DisplayFolderContent(ConsoleGraphics graphics, uint color)
         {
             int coordinateY = Settings.WindowCoordinateY;
+            _endPosition= (_folderContent.Count > _startPosition + Settings.NumberOfDisplayedStrings) ? _startPosition + Settings.NumberOfDisplayedStrings : _folderContent.Count;
 
-            for (int i = 0; i < _folderContent.Count; i++)
+            for (int i = _startPosition; i < _endPosition; i++)
             {
                 if (i == _position)
                 {
@@ -168,6 +171,26 @@ namespace FileManager
             }
         }
 
+        private void SetStartingPosition()
+        {
+            if (_position == _startPosition - 1 && _startPosition != 0)
+            {
+                _startPosition--;
+            }
+            else if (_position == _endPosition && _endPosition != _folderContent.Count)
+            {
+                _startPosition++;
+            }
+            else if (_position == 0)
+            {
+                _startPosition = 0;
+            }
+            else if (_position == _folderContent.Count - 1 && _endPosition != _folderContent.Count)
+            {
+                _startPosition = _folderContent.Count - Settings.NumberOfDisplayedStrings;
+            }
+        }
+
         private void MoveDown()
         {
             if (_currentPath == string.Empty)
@@ -177,6 +200,7 @@ namespace FileManager
             else
             {
                 _position = (_position++ == _folderContent.Count - 1) ? 0 : _position++;
+                SetStartingPosition();
             }
         }
 
@@ -189,6 +213,7 @@ namespace FileManager
             else
             {
                 _position = (_position-- <= 0) ? _folderContent.Count - 1 : _position--;
+                SetStartingPosition();
             }
         }
 
@@ -197,6 +222,7 @@ namespace FileManager
             _currentPath = Path.Combine(_currentPath, folderPath);
             _currentPath = new DirectoryInfo(_currentPath).FullName;
             _position = 0;
+            _startPosition = 0;
         }
 
         private string EnterName(ConsoleGraphics graphics)
