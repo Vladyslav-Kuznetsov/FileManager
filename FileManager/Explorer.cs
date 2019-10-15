@@ -133,7 +133,7 @@ namespace FileManager
         private void DisplayFolderContent(ConsoleGraphics graphics, uint color)
         {
             int coordinateY = Settings.WindowCoordinateY;
-            _endPosition= (_folderContent.Count > _startPosition + Settings.NumberOfDisplayedStrings) ? _startPosition + Settings.NumberOfDisplayedStrings : _folderContent.Count;
+            _endPosition = (_folderContent.Count > _startPosition + Settings.NumberOfDisplayedStrings) ? _startPosition + Settings.NumberOfDisplayedStrings : _folderContent.Count;
 
             for (int i = _startPosition; i < _endPosition; i++)
             {
@@ -164,7 +164,7 @@ namespace FileManager
             {
                 _position--;
             }
-            else if(_position < 0)
+            else if (_position < 0)
             {
                 _position++;
             }
@@ -260,7 +260,7 @@ namespace FileManager
             DirectoryInfo directory = new DirectoryInfo(currentPath);
             Message.ShowMessage("Search in folder:", directory.Name, graphics);
 
-            if(SystemItem.HasFolderPermission(directory))
+            if (SystemItem.HasFolderPermission(directory))
             {
                 foreach (var file in directory.EnumerateFiles().Where(f => !f.Attributes.HasFlag(FileAttributes.Hidden)))
                 {
