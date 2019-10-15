@@ -94,7 +94,7 @@ namespace FileManager
                 case ConsoleKey.F6 when _currentPath != string.Empty && _folderContent.Any():
                     _folderContent[_position].ShowProperties(graphics);
                     break;
-                case ConsoleKey.F7:
+                case ConsoleKey.F7 when _folderContent.Any():
                     _folderContent[_position].Rename(EnterName(graphics));
                     break;
                 case ConsoleKey.F8 when _currentPath != string.Empty:
