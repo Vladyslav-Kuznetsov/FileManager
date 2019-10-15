@@ -75,10 +75,10 @@ namespace FileManager
                     engine.IsLeftActive = !engine.IsLeftActive;
                     engine.IsRightActive = !engine.IsRightActive;
                     break;
-                case ConsoleKey.F1:
+                case ConsoleKey.F1 when _folderContent.Any():
                     SystemItem.Copy(engine, _folderContent[_position]);
                     break;
-                case ConsoleKey.F2:
+                case ConsoleKey.F2 when _folderContent.Any():
                     SystemItem.Cut(engine, _folderContent[_position]);
                     break;
                 case ConsoleKey.F3:
@@ -91,7 +91,7 @@ namespace FileManager
                     _currentPath = string.Empty;
                     _position = 0;
                     break;
-                case ConsoleKey.F6 when _currentPath != string.Empty:
+                case ConsoleKey.F6 when _currentPath != string.Empty && _folderContent.Any():
                     _folderContent[_position].ShowProperties(graphics);
                     break;
                 case ConsoleKey.F7:
