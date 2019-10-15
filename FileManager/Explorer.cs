@@ -84,7 +84,7 @@ namespace FileManager
                 case ConsoleKey.F3:
                     SystemItem.Paste(engine, _currentPath, graphics);
                     break;
-                case ConsoleKey.F4:
+                case ConsoleKey.F4 when _currentPath != string.Empty:
                     InFolder(Path.GetPathRoot(_currentPath));
                     break;
                 case ConsoleKey.F5:
@@ -101,7 +101,7 @@ namespace FileManager
                     FindFileByName(EnterName(graphics), _currentPath, graphics);
                     ShowIfFileFound(graphics);
                     break;
-                case ConsoleKey.F9:
+                case ConsoleKey.F9 when _currentPath != string.Empty:
                     Directory.CreateDirectory($@"{_currentPath}\{EnterName(graphics)}");
                     break;
                 case ConsoleKey.Escape:
