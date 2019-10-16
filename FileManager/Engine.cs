@@ -1,4 +1,4 @@
-﻿using FileManager.Navigation;
+﻿using FileManager.UserAction;
 using NConsoleGraphics;
 using System.Collections.Generic;
 
@@ -21,7 +21,7 @@ namespace FileManager
         {
             _tabs = new List<Tab>()
             {
-                new Tab(Settings.LeftWindowCoordinateX, _listener),
+                new Tab(Settings.LeftWindowCoordinateX, _listener) { IsActive = true},
                 new Tab(Settings.RigthWindowCoordinateX, _listener)
             };
             _graphics = new ConsoleGraphics();
@@ -40,7 +40,7 @@ namespace FileManager
 
                 foreach(var tab in _tabs)
                 {
-                    tab.Show(_graphics, IsLeftActive);
+                    tab.Show(_graphics);
                 }
 
                 _graphics.FlipPages();

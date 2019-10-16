@@ -6,7 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using NConsoleGraphics;
 
-namespace FileManager.Navigation
+namespace FileManager.UserAction
 {
     public class UserActionListener
     {

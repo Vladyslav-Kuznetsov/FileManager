@@ -50,9 +50,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Navigation\NavigateEventArgs.cs" />
-    <Compile Include="Navigation\NavigateType.cs" />
-    <Compile Include="Navigation\UserActionListener.cs" />
+    <Compile Include="UserAction\NavigateEventArgs.cs" />
+    <Compile Include="UserAction\NavigateType.cs" />
+    <Compile Include="UserAction\UserActionListener.cs" />
     <Compile Include="FileItem.cs" />
     <Compile Include="FolderItem.cs" />
     <Compile Include="Tab.cs" />

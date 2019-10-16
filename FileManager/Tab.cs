@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using FileManager.Navigation;
+using FileManager.UserAction;
 using NConsoleGraphics;
 
 namespace FileManager
@@ -13,11 +13,35 @@ namespace FileManager
         private readonly int _windowCordinateX;
         private readonly List<DriveInfo> _drives;
         private readonly List<SystemItem> _folderContent;
+        private readonly UserActionListener _listener;
         private int _startPosition;
         private int _endPosition;
         private int _position;
         private string _currentPath;
         private bool _isFind;
+        private bool _isActive;
+        public bool IsActive
+        {
+            get { return _isActive; }
+            set
+            {
+                if (_isActive == value)
+                {
+                    return;
+                }
+
+                _isActive = value;
+
+                if (_isActive)
+                {
+                    _listener.Navigated += Navigate;
+                }
+                else
+                {
+                    _listener.Navigated -= Navigate;
+                }
+            }
+        }
 
         public Tab(int windowCordinateX, UserActionListener listener)
         {
@@ -27,13 +51,13 @@ namespace FileManager
             _drives = new List<DriveInfo>();
             _drives.AddRange(DriveInfo.GetDrives().Where(drive => drive.DriveType == DriveType.Fixed));
             _isFind = false;
-            listener.Navigated += Navigate;
+            _listener = listener;
 
         }
 
-        public void Show(ConsoleGraphics graphics, bool isActive)
+        public void Show(ConsoleGraphics graphics)
         {
-            uint color = (isActive) ? Settings.ActiveColor : Settings.InactiveColor;
+            uint color = (IsActive) ? Settings.ActiveColor : Settings.InactiveColor;
             graphics.DrawRectangle(color, _windowCordinateX, Settings.WindowCoordinateY, Settings.WindowWidth, Settings.WindowHeight);
 
             if (_currentPath == string.Empty)

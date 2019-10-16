@@ -4,13 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FileManager.Navigation
+namespace FileManager.UserAction
 {
-    public enum NavigateType
+    public class NavigateEventArgs : EventArgs
     {
-        Up,
-        Down,
-        Back,
-        Enter
+        public NavigateType Type { get; set; }
     }
 }
