@@ -13,21 +13,22 @@ namespace FileManager.UserAction
         public event EventHandler<NavigateEventArgs> Navigated;
         public void ReadInput()
         {
-            if (Input.IsKeyDown(Keys.UP))
+            ConsoleKey command = Console.ReadKey(true).Key;
+
+            switch (command)
             {
-                Navigated?.Invoke(this, new NavigateEventArgs() { Type = NavigateType.Up });
-            }
-            else if (Input.IsKeyDown(Keys.DOWN))
-            {
-                Navigated?.Invoke(this, new NavigateEventArgs() { Type = NavigateType.Down });
-            }
-            if (Input.IsKeyDown(Keys.RETURN))
-            {
-                Navigated?.Invoke(this, new NavigateEventArgs() { Type = NavigateType.Enter });
-            }
-            if (Input.IsKeyDown(Keys.BACK))
-            {
-                Navigated?.Invoke(this, new NavigateEventArgs() { Type = NavigateType.Back });
+                case ConsoleKey.UpArrow:
+                    Navigated?.Invoke(this, new NavigateEventArgs() { Type = NavigateType.Up });
+                    break;
+                case ConsoleKey.DownArrow:
+                    Navigated?.Invoke(this, new NavigateEventArgs() { Type = NavigateType.Down });
+                    break;
+                case ConsoleKey.Enter:
+                    Navigated?.Invoke(this, new NavigateEventArgs() { Type = NavigateType.Enter });
+                    break;
+                case ConsoleKey.Backspace:
+                    Navigated?.Invoke(this, new NavigateEventArgs() { Type = NavigateType.Back });
+                    break;
             }
         }
     }
