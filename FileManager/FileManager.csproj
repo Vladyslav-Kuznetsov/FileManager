@@ -50,9 +50,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Navigation\NavigateEventArgs.cs" />
+    <Compile Include="Navigation\NavigateType.cs" />
+    <Compile Include="Navigation\UserActionListener.cs" />
     <Compile Include="FileItem.cs" />
     <Compile Include="FolderItem.cs" />
-    <Compile Include="Explorer.cs" />
+    <Compile Include="Tab.cs" />
     <Compile Include="Message.cs" />
     <Compile Include="SystemItem.cs" />
     <Compile Include="Program.cs" />
@@ -66,5 +69,6 @@
   <ItemGroup>
     <Content Include="Library\ConsoleGraphics.cs.dll" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

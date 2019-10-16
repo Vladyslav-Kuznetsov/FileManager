@@ -9,7 +9,7 @@ namespace FileManager
         public bool IsReadOnly { get; private set; }
 
         public FileItem(FileInfo file) :
-            base((file.Name.Length > 45) ? string.Join("", file.Name.Take(45)) + "..." : file.Name, file.FullName, new FolderItem(file.Directory), file.Directory.Root.Name, file.Extension, file.LastAccessTime, file.LastWriteTime)
+            base((file.Name.Length > 45) ? string.Join("", file.Name.Take(45)) + "..." : file.Name, file.FullName, file.Directory, file.Directory.Root.Name, file.Extension, file.LastAccessTime, file.LastWriteTime)
         {
             Size = file.Length;
             IsReadOnly = file.IsReadOnly;

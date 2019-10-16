@@ -10,14 +10,14 @@ namespace FileManager
     {
         public string Name { get; }
         public string FullName { get; }
-        public FolderItem ParentDirectory { get; }
+        public DirectoryInfo ParentDirectory { get; }
         public string Root { get; }
         public string Extension { get; }
         public DateTime LastAccessTime { get; }
         public DateTime LastWriteTime { get; }
         public long Size { get; protected set; }
 
-        public SystemItem(string name, string fullName, FolderItem parentDirectory, string root, string extension, DateTime lastAccessTime, DateTime lastWriteTime)
+        public SystemItem(string name, string fullName, DirectoryInfo parentDirectory, string root, string extension, DateTime lastAccessTime, DateTime lastWriteTime)
         {
             Name = name;
             FullName = fullName;

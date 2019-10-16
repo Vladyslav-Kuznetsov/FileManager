@@ -10,7 +10,7 @@ namespace FileManager
         public int CountFiles { get; private set; }
 
         public FolderItem(DirectoryInfo directory) :
-            base((directory.Name.Length > 45) ? string.Join("", directory.Name.Take(45)) + "..." : directory.Name, directory.FullName, (directory.Parent.Name == string.Empty) ? new FolderItem(directory.Root) : new FolderItem(directory.Parent), directory.Root.Name, "<dir>", directory.LastAccessTime, directory.LastWriteTime)
+            base((directory.Name.Length > 45) ? string.Join("", directory.Name.Take(45)) + "..." : directory.Name, directory.FullName, (directory.Parent.Name == string.Empty) ? directory.Root : directory.Parent, directory.Root.Name, "<dir>", directory.LastAccessTime, directory.LastWriteTime)
         {
         }
 

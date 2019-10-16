@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using FileManager.Navigation;
 using NConsoleGraphics;
 
 namespace FileManager
 {
-    public class Explorer
+    public class Tab
     {
         private readonly int _windowCordinateX;
         private readonly List<DriveInfo> _drives;
@@ -18,7 +19,7 @@ namespace FileManager
         private string _currentPath;
         private bool _isFind;
 
-        public Explorer(int windowCordinateX)
+        public Tab(int windowCordinateX, UserActionListener listener)
         {
             _windowCordinateX = windowCordinateX;
             _currentPath = string.Empty;
@@ -26,6 +27,8 @@ namespace FileManager
             _drives = new List<DriveInfo>();
             _drives.AddRange(DriveInfo.GetDrives().Where(drive => drive.DriveType == DriveType.Fixed));
             _isFind = false;
+            listener.Navigated += Navigate;
+
         }
 
         public void Show(ConsoleGraphics graphics, bool isActive)
@@ -45,70 +48,95 @@ namespace FileManager
             }
         }
 
-        public void Navigate(Engine engine, ConsoleGraphics graphics)
+        private void Navigate(object sender, NavigateEventArgs e)
         {
-            ConsoleKey command = Console.ReadKey(true).Key;
-
-            switch (command)
+            switch (e.Type)
             {
-                case ConsoleKey.DownArrow:
-                    MoveDown();
-                    break;
-                case ConsoleKey.UpArrow:
+                case NavigateType.Up:
                     MoveUp();
                     break;
-                case ConsoleKey.Enter when _currentPath == string.Empty:
+                case NavigateType.Down:
+                    MoveDown();
+                    break;
+                case NavigateType.Enter when _currentPath == string.Empty:
                     InFolder(_drives[_position].Name);
                     break;
-                case ConsoleKey.Enter when _folderContent.Any() && (_folderContent[_position] is FolderItem):
+                case NavigateType.Enter when _folderContent.Any() && (_folderContent[_position] is FolderItem):
                     InFolder(_folderContent[_position].Name);
                     break;
-                case ConsoleKey.Enter when _folderContent.Any() && _folderContent[_position] is FileItem:
-                    Process.Start(_folderContent[_position].FullName);
+                case NavigateType.Back when _currentPath == string.Empty:
                     break;
-                case ConsoleKey.Backspace when _currentPath == string.Empty:
-                    break;
-                case ConsoleKey.Backspace:
+                case NavigateType.Back:
                     InFolder("..");
-                    break;
-                case ConsoleKey.Tab:
-                    engine.IsLeftActive = !engine.IsLeftActive;
-                    engine.IsRightActive = !engine.IsRightActive;
-                    break;
-                case ConsoleKey.F1 when _folderContent.Any():
-                    SystemItem.Copy(engine, _folderContent[_position]);
-                    break;
-                case ConsoleKey.F2 when _folderContent.Any():
-                    SystemItem.Cut(engine, _folderContent[_position]);
-                    break;
-                case ConsoleKey.F3:
-                    SystemItem.Paste(engine, _currentPath, graphics);
-                    break;
-                case ConsoleKey.F4 when _currentPath != string.Empty:
-                    InFolder(Path.GetPathRoot(_currentPath));
-                    break;
-                case ConsoleKey.F5:
-                    _currentPath = string.Empty;
-                    _position = 0;
-                    break;
-                case ConsoleKey.F6 when _currentPath != string.Empty && _folderContent.Any():
-                    _folderContent[_position].ShowProperties(graphics);
-                    break;
-                case ConsoleKey.F7 when _folderContent.Any():
-                    _folderContent[_position].Rename(EnterName(graphics));
-                    break;
-                case ConsoleKey.F8 when _currentPath != string.Empty:
-                    FindFileByName(EnterName(graphics), _currentPath, graphics);
-                    ShowIfFileFound(graphics);
-                    break;
-                case ConsoleKey.F9 when _currentPath != string.Empty:
-                    Directory.CreateDirectory($@"{_currentPath}\{EnterName(graphics)}");
-                    break;
-                case ConsoleKey.Escape:
-                    engine.Exit = !engine.Exit;
                     break;
             }
         }
+
+        //public void Navigate(Engine engine, ConsoleGraphics graphics)
+        //{
+
+        //    //ConsoleKey command = Console.ReadKey(true).Key;
+
+        //    //switch (command)
+        //    //{
+        //    //    case ConsoleKey.DownArrow:
+        //    //        MoveDown();
+        //    //        break;
+        //    //    case ConsoleKey.UpArrow:
+        //    //        MoveUp();
+        //    //        break;
+        //    //    case ConsoleKey.Enter when _currentPath == string.Empty:
+        //    //        InFolder(_drives[_position].Name);
+        //    //        break;
+        //    //    case ConsoleKey.Enter when _folderContent.Any() && (_folderContent[_position] is FolderItem):
+        //    //        InFolder(_folderContent[_position].Name);
+        //    //        break;
+        //    //    case ConsoleKey.Enter when _folderContent.Any() && _folderContent[_position] is FileItem:
+        //    //        Process.Start(_folderContent[_position].FullName);
+        //    //        break;
+        //    //    case ConsoleKey.Backspace when _currentPath == string.Empty:
+        //    //        break;
+        //    //    case ConsoleKey.Backspace:
+        //    //        InFolder("..");
+        //    //        break;
+        //    //    case ConsoleKey.Tab:
+        //    //        engine.IsLeftActive = !engine.IsLeftActive;
+        //    //        engine.IsRightActive = !engine.IsRightActive;
+        //    //        break;
+        //    //    case ConsoleKey.F1 when _folderContent.Any():
+        //    //        SystemItem.Copy(engine, _folderContent[_position]);
+        //    //        break;
+        //    //    case ConsoleKey.F2 when _folderContent.Any():
+        //    //        SystemItem.Cut(engine, _folderContent[_position]);
+        //    //        break;
+        //    //    case ConsoleKey.F3:
+        //    //        SystemItem.Paste(engine, _currentPath, graphics);
+        //    //        break;
+        //    //    case ConsoleKey.F4 when _currentPath != string.Empty:
+        //    //        InFolder(Path.GetPathRoot(_currentPath));
+        //    //        break;
+        //    //    case ConsoleKey.F5:
+        //    //        _currentPath = string.Empty;
+        //    //        _position = 0;
+        //    //        break;
+        //    //    case ConsoleKey.F6 when _currentPath != string.Empty && _folderContent.Any():
+        //    //        _folderContent[_position].ShowProperties(graphics);
+        //    //        break;
+        //    //    case ConsoleKey.F7 when _folderContent.Any():
+        //    //        _folderContent[_position].Rename(EnterName(graphics));
+        //    //        break;
+        //    //    case ConsoleKey.F8 when _currentPath != string.Empty:
+        //    //        FindFileByName(EnterName(graphics), _currentPath, graphics);
+        //    //        ShowIfFileFound(graphics);
+        //    //        break;
+        //    //    case ConsoleKey.F9 when _currentPath != string.Empty:
+        //    //        Directory.CreateDirectory($@"{_currentPath}\{EnterName(graphics)}");
+        //    //        break;
+        //    //    case ConsoleKey.Escape:
+        //    //        engine.Exit = !engine.Exit;
+        //    //        break;
+        //    //}
+        //}
 
         private void DisplayDrives(ConsoleGraphics graphics, uint color)
         {
