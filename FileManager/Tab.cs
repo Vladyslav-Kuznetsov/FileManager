@@ -10,6 +10,7 @@ namespace FileManager
 {
     public class Tab
     {
+
         private readonly int _windowCordinateX;
         private readonly List<DriveInfo> _drives;
         private readonly List<SystemItem> _folderContent;
