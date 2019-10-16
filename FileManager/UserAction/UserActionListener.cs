@@ -11,6 +11,7 @@ namespace FileManager.UserAction
     public class UserActionListener
     {
         public event EventHandler<NavigateEventArgs> Navigated;
+        public event EventHandler<NavigateEventArgs> Switch;
         public void ReadInput()
         {
             ConsoleKey command = Console.ReadKey(true).Key;
@@ -28,6 +29,9 @@ namespace FileManager.UserAction
                     break;
                 case ConsoleKey.Backspace:
                     Navigated?.Invoke(this, new NavigateEventArgs() { Type = NavigateType.Back });
+                    break;
+                case ConsoleKey.Tab:
+                    Switch?.Invoke(this, new NavigateEventArgs() { Type = NavigateType.Tab});
                     break;
             }
         }

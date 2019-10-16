@@ -11,6 +11,7 @@ namespace FileManager.UserAction
         Up,
         Down,
         Back,
-        Enter
+        Enter,
+        Tab
     }
 }
