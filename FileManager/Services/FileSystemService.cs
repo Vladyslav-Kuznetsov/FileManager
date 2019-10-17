@@ -9,68 +9,74 @@ namespace FileManager.Services
 {
     public class FileSystemService
     {
-        private Clipboard _clipboard;
+        //public void Paste(string currentPath)
+        //{
+        //    if (_clipboard.TempItem is FileItem file)
+        //    {
+        //        try
+        //        {
+        //            if (_clipboard.IsCut)
+        //            {
+        //                File.Move(file.FullName, $@"{ currentPath}\{file.Name}");
+        //                _clipboard.TempItem = null;
+        //            }
+        //            else
+        //            {
+        //                File.Copy(file.FullName, $@"{ currentPath}\{file.Name}");
+        //            }
+        //        }
+        //        catch (IOException)
+        //        {
 
-        public FileSystemService(Clipboard clipboard)
+        //        }
+        //    }
+
+        //    if (_clipboard.TempItem is FolderItem directory)
+        //    {
+        //        try
+        //        {
+        //            if (_clipboard.IsCut)
+        //            {
+        //                CopyFolder(directory.FullName, $@"{currentPath}\{directory.Name}");
+        //                Directory.Delete(directory.FullName, true);
+        //                _clipboard.TempItem = null;
+        //            }
+        //            else
+        //            {
+        //                CopyFolder(directory.FullName, $@"{currentPath}\{directory.Name}");
+        //            }
+        //        }
+        //        catch (IOException)
+        //        {
+
+        //        }
+        //    }
+
+
+        public void Copy(string sourcePath, string destPath)
         {
-            _clipboard = clipboard;
+            if (sourcePath.Last() == '\\')
+            {
+                CopyFolder(sourcePath, destPath);
+            }
+            else
+            {
+                File.Copy(sourcePath, destPath);
+            }
         }
 
-        public void Paste(string currentPath)
+        public void Move(string sourcePath, string destPath)
         {
-            if (_clipboard.TempItem is FileItem file)
+            if (sourcePath.Last() == '\\')
             {
-                try
-                {
-                    if (_clipboard.IsCut)
-                    {
-                        File.Move(file.FullName, $@"{ currentPath}\{file.Name}");
-                        _clipboard.TempItem = null;
-                    }
-                    else
-                    {
-                        File.Copy(file.FullName, $@"{ currentPath}\{file.Name}");
-                    }
-                }
-                catch (IOException)
-                {
-
-                }
+                CopyFolder(sourcePath, destPath);
+                Directory.Delete(sourcePath);
             }
-
-            if (_clipboard.TempItem is FolderItem directory)
+            else
             {
-                try
-                {
-                    if (_clipboard.IsCut)
-                    {
-                        CopyFolder(directory.FullName, $@"{currentPath}\{directory.Name}");
-                        Directory.Delete(directory.FullName, true);
-                        _clipboard.TempItem = null;
-                    }
-                    else
-                    {
-                        CopyFolder(directory.FullName, $@"{currentPath}\{directory.Name}");
-                    }
-                }
-                catch (IOException)
-                {
-
-                }
+                File.Move(sourcePath, destPath);
             }
         }
-
-        //public void Copy(SystemItem item)
-        //{
-        //    _buffer.TempItem = item;
-        //    _buffer.IsCut = false;
-        //}
-
-        //public void Cut(SystemItem item)
-        //{
-        //    _buffer.TempItem = item;
-        //    _buffer.IsCut = true;
-        //}
 
         private void CopyFolder(string sourcePath, string destPath)
         {

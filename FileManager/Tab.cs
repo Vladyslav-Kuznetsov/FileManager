@@ -15,8 +15,6 @@ namespace FileManager
         private readonly List<DriveInfo> _drives;
         private readonly List<SystemItem> _folderContent;
         private readonly UserActionListener _listener;
-        private readonly Clipboard _clipboard;
-        private readonly FileSystemService _fileSystemService;
         private int _startPosition;
         private int _endPosition;
         private int _position;
@@ -38,34 +36,38 @@ namespace FileManager
                 if (_isActive)
                 {
                     _listener.Navigated += Navigate;
-                    _listener.AddToBuffer += AddToBuffer;
-                    _listener.Paste += Paste;
                 }
                 else
                 {
                     _listener.Navigated -= Navigate;
-                    _listener.AddToBuffer -= AddToBuffer;
-                    _listener.Paste -= Paste;
                 }
             }
         }
+        public string CurrentPath
+        {
+            get
+            {
+                return _currentPath;
+            }
+        }
 
-        public Tab(int windowCordinateX, UserActionListener listener, Clipboard clipboard, FileSystemService fileSystemService)
+        public SystemItem SelectedItem
+        {
+            get
+            {
+                return _folderContent[_position];
+            }
+        }
+
+        public Tab(int windowCordinateX, UserActionListener listener)
         {
             _windowCordinateX = windowCordinateX;
             _currentPath = string.Empty;
-            _clipboard = clipboard;
-            _fileSystemService = fileSystemService;
             _folderContent = new List<SystemItem>();
             _drives = new List<DriveInfo>();
             _drives.AddRange(DriveInfo.GetDrives().Where(drive => drive.DriveType == DriveType.Fixed));
             _isFind = false;
             _listener = listener;
-        }
-
-        private void Paste()
-        {
-            _fileSystemService.Paste(_currentPath);
         }
 
         public void Show(ConsoleGraphics graphics)
@@ -83,12 +85,6 @@ namespace FileManager
                 CheckPosition();
                 DisplayFolderContent(graphics, color);
             }
-        }
-
-        private void AddToBuffer(bool obj)
-        {
-            _clipboard.TempItem = _folderContent[_position];
-            _clipboard.IsCut = obj;
         }
 
         private void Navigate(object sender, NavigateEventArgs e)
@@ -114,72 +110,6 @@ namespace FileManager
                     break;
             }
         }
-
-        //public void Navigate(Engine engine, ConsoleGraphics graphics)
-        //{
-
-        //    //ConsoleKey command = Console.ReadKey(true).Key;
-
-        //    //switch (command)
-        //    //{
-        //    //    case ConsoleKey.DownArrow:
-        //    //        MoveDown();
-        //    //        break;
-        //    //    case ConsoleKey.UpArrow:
-        //    //        MoveUp();
-        //    //        break;
-        //    //    case ConsoleKey.Enter when _currentPath == string.Empty:
-        //    //        InFolder(_drives[_position].Name);
-        //    //        break;
-        //    //    case ConsoleKey.Enter when _folderContent.Any() && (_folderContent[_position] is FolderItem):
-        //    //        InFolder(_folderContent[_position].Name);
-        //    //        break;
-        //    //    case ConsoleKey.Enter when _folderContent.Any() && _folderContent[_position] is FileItem:
-        //    //        Process.Start(_folderContent[_position].FullName);
-        //    //        break;
-        //    //    case ConsoleKey.Backspace when _currentPath == string.Empty:
-        //    //        break;
-        //    //    case ConsoleKey.Backspace:
-        //    //        InFolder("..");
-        //    //        break;
-        //    //    case ConsoleKey.Tab:
-        //    //        engine.IsLeftActive = !engine.IsLeftActive;
-        //    //        engine.IsRightActive = !engine.IsRightActive;
-        //    //        break;
-        //    //    case ConsoleKey.F1 when _folderContent.Any():
-        //    //        SystemItem.Copy(engine, _folderContent[_position]);
-        //    //        break;
-        //    //    case ConsoleKey.F2 when _folderContent.Any():
-        //    //        SystemItem.Cut(engine, _folderContent[_position]);
-        //    //        break;
-        //    //    case ConsoleKey.F3:
-        //    //        SystemItem.Paste(engine, _currentPath, graphics);
-        //    //        break;
-        //    //    case ConsoleKey.F4 when _currentPath != string.Empty:
-        //    //        InFolder(Path.GetPathRoot(_currentPath));
-        //    //        break;
-        //    //    case ConsoleKey.F5:
-        //    //        _currentPath = string.Empty;
-        //    //        _position = 0;
-        //    //        break;
-        //    //    case ConsoleKey.F6 when _currentPath != string.Empty && _folderContent.Any():
-        //    //        _folderContent[_position].ShowProperties(graphics);
-        //    //        break;
-        //    //    case ConsoleKey.F7 when _folderContent.Any():
-        //    //        _folderContent[_position].Rename(EnterName(graphics));
-        //    //        break;
-        //    //    case ConsoleKey.F8 when _currentPath != string.Empty:
-        //    //        FindFileByName(EnterName(graphics), _currentPath, graphics);
-        //    //        ShowIfFileFound(graphics);
-        //    //        break;
-        //    //    case ConsoleKey.F9 when _currentPath != string.Empty:
-        //    //        Directory.CreateDirectory($@"{_currentPath}\{EnterName(graphics)}");
-        //    //        break;
-        //    //    case ConsoleKey.Escape:
-        //    //        engine.Exit = !engine.Exit;
-        //    //        break;
-        //    //}
-        //}
 
         private void DisplayDrives(ConsoleGraphics graphics, uint color)
         {

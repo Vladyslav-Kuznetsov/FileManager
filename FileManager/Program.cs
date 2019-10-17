@@ -5,7 +5,7 @@
         public static void Main(string[] args)
         {
             Settings.SetupDefaultConsoleSettings();
-            Engine engine = new Engine();
+            Controller engine = new Controller();
             engine.Start();
         }
     }
