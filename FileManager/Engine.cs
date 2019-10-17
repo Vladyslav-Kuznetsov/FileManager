@@ -9,10 +9,8 @@ namespace FileManager
     {
         private readonly List<Tab> _tabs;
         private readonly ConsoleGraphics _graphics;
-        private readonly UserActionListener _listener = new UserActionListener();
+        private readonly UserActionListener _userActionListener = new UserActionListener();
         public SystemItem TempItem { get; set; }
-        //public bool IsLeftActive { get; set; }
-        //public bool IsRightActive { get; set; }
         public bool Exit { get; set; }
         public bool IsCut { get; set; }
 
@@ -20,18 +18,16 @@ namespace FileManager
         {
             _tabs = new List<Tab>()
             {
-                new Tab(Settings.LeftWindowCoordinateX, _listener) { IsActive = true},
-                new Tab(Settings.RigthWindowCoordinateX, _listener)
+                new Tab(Settings.LeftWindowCoordinateX, _userActionListener) { IsActive = true},
+                new Tab(Settings.RigthWindowCoordinateX, _userActionListener)
             };
             _graphics = new ConsoleGraphics();
-            //IsLeftActive = true;
-            //IsRightActive = false;
             Exit = false;
             IsCut = false;
-            _listener.Switch += SelectNextTab;
+            _userActionListener.Switch += SelectNextTab;
         }
 
-        private void SelectNextTab(object sender, NavigateEventArgs e)
+        private void SelectNextTab()
         {
             for (int i = 0; i < _tabs.Count; i++)
             {
@@ -67,7 +63,7 @@ namespace FileManager
                 }
 
                 _graphics.FlipPages();
-                _listener.ReadInput();
+                _userActionListener.ReadInput();
             }
         }
 

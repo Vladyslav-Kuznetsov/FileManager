@@ -49,66 +49,66 @@ namespace FileManager
             graphics.DrawString("Press Enter to continue :", Settings.FontName, Settings.BlackColor, Settings.PropertiesCoordinateX, Settings.PropertiesCoordinateY + (Settings.FontSize * 9) + 1, Settings.FontSize + 3);
         }
 
-        public static void Paste(Engine engine, string currentPath, ConsoleGraphics graphics)
-        {
-            string message = (engine.IsCut) ? "Moving to:" : "Copy to:";
-            Message.ShowMessage(message, currentPath, graphics);
+        //public static void Paste(Engine engine, string currentPath, ConsoleGraphics graphics)
+        //{
+        //    string message = (engine.IsCut) ? "Moving to:" : "Copy to:";
+        //    Message.ShowMessage(message, currentPath, graphics);
 
-            if (engine.TempItem is FileItem file)
-            {
-                try
-                {
-                    if (engine.IsCut)
-                    {
-                        File.Move(file.FullName, $@"{ currentPath}\{file.Name}");
-                        engine.TempItem = null;
-                    }
-                    else
-                    {
-                        File.Copy(file.FullName, $@"{ currentPath}\{file.Name}");
-                    }
-                }
-                catch (IOException)
-                {
-                    Message.ShowMessage("A file with the same name already exists.", "Press Enter to continue", graphics);
-                    Message.CloseMessage();
-                }
-            }
+        //    if (engine.TempItem is FileItem file)
+        //    {
+        //        try
+        //        {
+        //            if (engine.IsCut)
+        //            {
+        //                File.Move(file.FullName, $@"{ currentPath}\{file.Name}");
+        //                engine.TempItem = null;
+        //            }
+        //            else
+        //            {
+        //                File.Copy(file.FullName, $@"{ currentPath}\{file.Name}");
+        //            }
+        //        }
+        //        catch (IOException)
+        //        {
+        //            Message.ShowMessage("A file with the same name already exists.", "Press Enter to continue", graphics);
+        //            Message.CloseMessage();
+        //        }
+        //    }
 
-            if (engine.TempItem is FolderItem directory)
-            {
-                try
-                {
-                    if (engine.IsCut)
-                    {
-                        CopyFolder(directory.FullName, $@"{currentPath}\{directory.Name}");
-                        Directory.Delete(directory.FullName, true);
-                        engine.TempItem = null;
-                    }
-                    else
-                    {
-                        CopyFolder(directory.FullName, $@"{currentPath}\{directory.Name}");
-                    }
-                }
-                catch (IOException)
-                {
-                    Message.ShowMessage("A folder with the same name already exists.", "Press Enter to continue", graphics);
-                    Message.CloseMessage();
-                }
-            }
-        }
+        //    if (engine.TempItem is FolderItem directory)
+        //    {
+        //        try
+        //        {
+        //            if (engine.IsCut)
+        //            {
+        //                CopyFolder(directory.FullName, $@"{currentPath}\{directory.Name}");
+        //                Directory.Delete(directory.FullName, true);
+        //                engine.TempItem = null;
+        //            }
+        //            else
+        //            {
+        //                CopyFolder(directory.FullName, $@"{currentPath}\{directory.Name}");
+        //            }
+        //        }
+        //        catch (IOException)
+        //        {
+        //            Message.ShowMessage("A folder with the same name already exists.", "Press Enter to continue", graphics);
+        //            Message.CloseMessage();
+        //        }
+        //    }
+        //}
 
-        public static void Copy(Engine engine, SystemItem item)
-        {
-            engine.TempItem = item;
-            engine.IsCut = false;
-        }
+        //public static void Copy(Engine engine, SystemItem item)
+        //{
+        //    engine.TempItem = item;
+        //    engine.IsCut = false;
+        //}
 
-        public static void Cut(Engine engine, SystemItem item)
-        {
-            engine.TempItem = item;
-            engine.IsCut = true;
-        }
+        //public static void Cut(Engine engine, SystemItem item)
+        //{
+        //    engine.TempItem = item;
+        //    engine.IsCut = true;
+        //}
 
         public static bool HasFolderPermission(DirectoryInfo directoryInfo)
         {
@@ -165,20 +165,20 @@ namespace FileManager
             return fileSize;
         }
 
-        private static void CopyFolder(string sourcePath, string destPath)
-        {
-            Directory.CreateDirectory(destPath);
+        //private static void CopyFolder(string sourcePath, string destPath)
+        //{
+        //    Directory.CreateDirectory(destPath);
 
-            foreach (string currentFilePath in Directory.GetFiles(sourcePath))
-            {
-                string resultFilePath = destPath + "\\" + Path.GetFileName(currentFilePath);
-                File.Copy(currentFilePath, resultFilePath);
-            }
+        //    foreach (string currentFilePath in Directory.GetFiles(sourcePath))
+        //    {
+        //        string resultFilePath = destPath + "\\" + Path.GetFileName(currentFilePath);
+        //        File.Copy(currentFilePath, resultFilePath);
+        //    }
 
-            foreach (string folderPath in Directory.GetDirectories(sourcePath))
-            {
-                CopyFolder(folderPath, destPath + "\\" + Path.GetFileName(folderPath));
-            }
-        }
+        //    foreach (string folderPath in Directory.GetDirectories(sourcePath))
+        //    {
+        //        CopyFolder(folderPath, destPath + "\\" + Path.GetFileName(folderPath));
+        //    }
+        //}
     }
 }

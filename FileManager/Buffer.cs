@@ -4,13 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FileManager.UserAction
+namespace FileManager
 {
-    public enum NavigateType
+    public class Buffer
     {
-        Up,
-        Down,
-        Back,
-        Enter,
+        public bool IsCut { get; set; }
+        public SystemItem TempItem { get; set; }
     }
 }
