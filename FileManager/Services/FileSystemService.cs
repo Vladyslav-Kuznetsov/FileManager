@@ -70,7 +70,7 @@ namespace FileManager.Services
             if (sourcePath.Last() == '\\')
             {
                 CopyFolder(sourcePath, destPath);
-                Directory.Delete(sourcePath);
+                Directory.Delete(sourcePath, true);
             }
             else
             {

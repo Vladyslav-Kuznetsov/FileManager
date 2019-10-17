@@ -36,15 +36,14 @@ namespace FileManager
                 if (_tabs[i].IsActive == true)
                 {
                     string sourcePath = (_tabs[i].SelectedItem is FolderItem) ? _tabs[i].SelectedItem.FullName + @"\" : _tabs[i].SelectedItem.FullName;
-                    string itemName = (_tabs[i].SelectedItem is FolderItem) ? $@"\{_tabs[i].SelectedItem.Name}" : $@"\{_tabs[i].SelectedItem.Name}{_tabs[i].SelectedItem.Extension}";
 
                     if (i == _tabs.Count - 1)
                     {
-                        _fileSystemService.Move(sourcePath, _tabs[0].CurrentPath + itemName);
+                        _fileSystemService.Move(sourcePath, _tabs[0].CurrentPath + $@"\{_tabs[i].SelectedItem.Name}");
                     }
                     else
                     {
-                        _fileSystemService.Move(sourcePath, _tabs[i + 1].CurrentPath + itemName);
+                        _fileSystemService.Move(sourcePath, _tabs[i + 1].CurrentPath + $@"\{_tabs[i].SelectedItem.Name}");
                     }
 
                     return;
@@ -59,15 +58,14 @@ namespace FileManager
                 if (_tabs[i].IsActive == true)
                 {
                     string sourcePath = (_tabs[i].SelectedItem is FolderItem) ? _tabs[i].SelectedItem.FullName + @"\" : _tabs[i].SelectedItem.FullName;
-                    string itemName = (_tabs[i].SelectedItem is FolderItem) ? $@"\{_tabs[i].SelectedItem.Name}" : $@"\{_tabs[i].SelectedItem.Name}{_tabs[i].SelectedItem.Extension}";
 
                     if (i == _tabs.Count - 1)
                     {
-                        _fileSystemService.Copy(sourcePath, _tabs[0].CurrentPath + itemName);
+                        _fileSystemService.Copy(sourcePath, _tabs[0].CurrentPath + $@"\{_tabs[i].SelectedItem.Name}");
                     }
                     else
                     {
-                        _fileSystemService.Copy(sourcePath, _tabs[i + 1].CurrentPath + itemName);
+                        _fileSystemService.Copy(sourcePath, _tabs[i + 1].CurrentPath + $@"\{_tabs[i].SelectedItem.Name}");
                     }
 
                     return;
