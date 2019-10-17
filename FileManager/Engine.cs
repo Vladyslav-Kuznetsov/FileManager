@@ -1,4 +1,5 @@
-﻿using FileManager.UserAction;
+﻿using FileManager.Services;
+using FileManager.UserAction;
 using NConsoleGraphics;
 using System;
 using System.Collections.Generic;
@@ -10,20 +11,21 @@ namespace FileManager
         private readonly List<Tab> _tabs;
         private readonly ConsoleGraphics _graphics;
         private readonly UserActionListener _userActionListener = new UserActionListener();
-        public SystemItem TempItem { get; set; }
+        private readonly Clipboard _сlipboard;
+        private readonly FileSystemService _fileSystemService;
         public bool Exit { get; set; }
-        public bool IsCut { get; set; }
 
         public Engine()
         {
+            _сlipboard = new Clipboard();
+            _fileSystemService = new FileSystemService(_сlipboard);
             _tabs = new List<Tab>()
             {
-                new Tab(Settings.LeftWindowCoordinateX, _userActionListener) { IsActive = true},
-                new Tab(Settings.RigthWindowCoordinateX, _userActionListener)
+                new Tab(Settings.LeftWindowCoordinateX, _userActionListener,_сlipboard, _fileSystemService) { IsActive = true},
+                new Tab(Settings.RigthWindowCoordinateX, _userActionListener,_сlipboard, _fileSystemService)
             };
             _graphics = new ConsoleGraphics();
             Exit = false;
-            IsCut = false;
             _userActionListener.Switch += SelectNextTab;
         }
 

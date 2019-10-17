@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using FileManager.Services;
 using FileManager.UserAction;
 using NConsoleGraphics;
 
@@ -10,11 +11,12 @@ namespace FileManager
 {
     public class Tab
     {
-
         private readonly int _windowCordinateX;
         private readonly List<DriveInfo> _drives;
         private readonly List<SystemItem> _folderContent;
         private readonly UserActionListener _listener;
+        private readonly Clipboard _clipboard;
+        private readonly FileSystemService _fileSystemService;
         private int _startPosition;
         private int _endPosition;
         private int _position;
@@ -36,24 +38,34 @@ namespace FileManager
                 if (_isActive)
                 {
                     _listener.Navigated += Navigate;
+                    _listener.AddToBuffer += AddToBuffer;
+                    _listener.Paste += Paste;
                 }
                 else
                 {
                     _listener.Navigated -= Navigate;
+                    _listener.AddToBuffer -= AddToBuffer;
+                    _listener.Paste -= Paste;
                 }
             }
         }
 
-        public Tab(int windowCordinateX, UserActionListener listener)
+        public Tab(int windowCordinateX, UserActionListener listener, Clipboard clipboard, FileSystemService fileSystemService)
         {
             _windowCordinateX = windowCordinateX;
             _currentPath = string.Empty;
+            _clipboard = clipboard;
+            _fileSystemService = fileSystemService;
             _folderContent = new List<SystemItem>();
             _drives = new List<DriveInfo>();
             _drives.AddRange(DriveInfo.GetDrives().Where(drive => drive.DriveType == DriveType.Fixed));
             _isFind = false;
             _listener = listener;
+        }
 
+        private void Paste()
+        {
+            _fileSystemService.Paste(_currentPath);
         }
 
         public void Show(ConsoleGraphics graphics)
@@ -71,6 +83,12 @@ namespace FileManager
                 CheckPosition();
                 DisplayFolderContent(graphics, color);
             }
+        }
+
+        private void AddToBuffer(bool obj)
+        {
+            _clipboard.TempItem = _folderContent[_position];
+            _clipboard.IsCut = obj;
         }
 
         private void Navigate(object sender, NavigateEventArgs e)

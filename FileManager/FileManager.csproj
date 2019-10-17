@@ -50,8 +50,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Buffer.cs" />
-    <Compile Include="SystemService.cs" />
+    <Compile Include="Clipboard.cs" />
+    <Compile Include="Services\FileSystemService.cs" />
     <Compile Include="UserAction\NavigateEventArgs.cs" />
     <Compile Include="UserAction\NavigateType.cs" />
     <Compile Include="UserAction\UserActionListener.cs" />

@@ -12,6 +12,8 @@ namespace FileManager.UserAction
     {
         public event EventHandler<NavigateEventArgs> Navigated;
         public event Action Switch;
+        public event Action<bool> AddToBuffer;
+        public event Action Paste;
 
         public void ReadInput()
         {
@@ -34,6 +36,16 @@ namespace FileManager.UserAction
                 case ConsoleKey.Tab:
                     Switch?.Invoke();
                     break;
+                case ConsoleKey.F1:
+                    AddToBuffer?.Invoke(false);
+                    break;
+                case ConsoleKey.F2:
+                    AddToBuffer?.Invoke(true);
+                    break;
+                case ConsoleKey.F3:
+                    Paste?.Invoke();
+                    break;
+
             }
         }
     }

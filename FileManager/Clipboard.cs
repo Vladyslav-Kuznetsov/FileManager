@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace FileManager
 {
-    public class Buffer
+    public class Clipboard
     {
         public bool IsCut { get; set; }
         public SystemItem TempItem { get; set; }

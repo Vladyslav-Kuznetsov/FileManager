@@ -5,22 +5,27 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FileManager
+namespace FileManager.Services
 {
-    public class SystemService
+    public class FileSystemService
     {
-        private Buffer _buffer = new Buffer();
+        private Clipboard _clipboard;
+
+        public FileSystemService(Clipboard clipboard)
+        {
+            _clipboard = clipboard;
+        }
 
         public void Paste(string currentPath)
         {
-            if (_buffer.TempItem is FileItem file)
+            if (_clipboard.TempItem is FileItem file)
             {
                 try
                 {
-                    if (_buffer.IsCut)
+                    if (_clipboard.IsCut)
                     {
                         File.Move(file.FullName, $@"{ currentPath}\{file.Name}");
-                        _buffer.TempItem = null;
+                        _clipboard.TempItem = null;
                     }
                     else
                     {
@@ -33,15 +38,15 @@ namespace FileManager
                 }
             }
 
-            if (_buffer.TempItem is FolderItem directory)
+            if (_clipboard.TempItem is FolderItem directory)
             {
                 try
                 {
-                    if (_buffer.IsCut)
+                    if (_clipboard.IsCut)
                     {
                         CopyFolder(directory.FullName, $@"{currentPath}\{directory.Name}");
                         Directory.Delete(directory.FullName, true);
-                        _buffer.TempItem = null;
+                        _clipboard.TempItem = null;
                     }
                     else
                     {
@@ -55,17 +60,17 @@ namespace FileManager
             }
         }
 
-        public void Copy(SystemItem item)
-        {
-            _buffer.TempItem = item;
-            _buffer.IsCut = false;
-        }
+        //public void Copy(SystemItem item)
+        //{
+        //    _buffer.TempItem = item;
+        //    _buffer.IsCut = false;
+        //}
 
-        public void Cut(SystemItem item)
-        {
-            _buffer.TempItem = item;
-            _buffer.IsCut = true;
-        }
+        //public void Cut(SystemItem item)
+        //{
+        //    _buffer.TempItem = item;
+        //    _buffer.IsCut = true;
+        //}
 
         private void CopyFolder(string sourcePath, string destPath)
         {
