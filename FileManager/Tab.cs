@@ -15,6 +15,7 @@ namespace FileManager
         private readonly List<DriveInfo> _drives;
         private readonly List<SystemItem> _folderContent;
         private readonly UserActionListener _listener;
+        private readonly FileSystemService _fileSystemService;
         private int _startPosition;
         private int _endPosition;
         private int _position;
@@ -59,7 +60,7 @@ namespace FileManager
             }
         }
 
-        public Tab(int windowCordinateX, UserActionListener listener)
+        public Tab(int windowCordinateX, UserActionListener listener, FileSystemService fileSystemService)
         {
             _windowCordinateX = windowCordinateX;
             _currentPath = string.Empty;
@@ -68,6 +69,7 @@ namespace FileManager
             _drives.AddRange(DriveInfo.GetDrives().Where(drive => drive.DriveType == DriveType.Fixed));
             _isFind = false;
             _listener = listener;
+            _fileSystemService = fileSystemService;
         }
 
         public void Show(ConsoleGraphics graphics)
@@ -154,9 +156,8 @@ namespace FileManager
 
         private void InitCurrentDirectory()
         {
-            DirectoryInfo directory = new DirectoryInfo(_currentPath);
             _folderContent.Clear();
-            _folderContent.AddRange(directory.EnumerateDirectories().Where(dir => SystemItem.HasFolderPermission(dir) && !dir.Attributes.HasFlag(FileAttributes.Hidden)).Select(dir => new FolderItem(dir)).Cast<SystemItem>().Concat(directory.EnumerateFiles().Where(file => !file.Attributes.HasFlag(FileAttributes.Hidden)).Select(file => new FileItem(file)).Cast<SystemItem>()));
+            _folderContent.AddRange(_fileSystemService.GetFolderContent(_currentPath));
         }
 
         private void CheckPosition()
@@ -225,69 +226,69 @@ namespace FileManager
             _startPosition = 0;
         }
 
-        private string EnterName(ConsoleGraphics graphics)
-        {
-            bool exit = false;
-            List<char> name = new List<char>();
-            string result = string.Empty;
+        //private string EnterName(ConsoleGraphics graphics)
+        //{
+        //    bool exit = false;
+        //    List<char> name = new List<char>();
+        //    string result = string.Empty;
 
-            while (!exit)
-            {
-                Message.ShowMessage("Enter name:", result, graphics);
-                ConsoleKeyInfo key = Console.ReadKey(true);
+        //    while (!exit)
+        //    {
+        //        Message.ShowMessage("Enter name:", result, graphics);
+        //        ConsoleKeyInfo key = Console.ReadKey(true);
 
-                switch (key.Key)
-                {
-                    case ConsoleKey.Enter:
-                        exit = true;
-                        break;
-                    case ConsoleKey.Backspace when name.Count == 0:
-                        break;
-                    case ConsoleKey.Backspace:
-                        name.RemoveAt(name.Count - 1);
-                        break;
-                    default:
-                        name.Add(key.KeyChar);
-                        break;
-                }
+        //        switch (key.Key)
+        //        {
+        //            case ConsoleKey.Enter:
+        //                exit = true;
+        //                break;
+        //            case ConsoleKey.Backspace when name.Count == 0:
+        //                break;
+        //            case ConsoleKey.Backspace:
+        //                name.RemoveAt(name.Count - 1);
+        //                break;
+        //            default:
+        //                name.Add(key.KeyChar);
+        //                break;
+        //        }
 
-                result = string.Join("", name);
-            }
-            return result;
-        }
+        //        result = string.Join("", name);
+        //    }
+        //    return result;
+        //}
 
-        private void FindFileByName(string name, string currentPath, ConsoleGraphics graphics)
-        {
-            DirectoryInfo directory = new DirectoryInfo(currentPath);
-            Message.ShowMessage("Search in folder:", directory.Name, graphics);
+        //private void FindFileByName(string name, string currentPath, ConsoleGraphics graphics)
+        //{
+        //    DirectoryInfo directory = new DirectoryInfo(currentPath);
+        //    //Message.ShowMessage("Search in folder:", directory.Name, graphics);
 
-            if (SystemItem.HasFolderPermission(directory))
-            {
-                foreach (var file in directory.EnumerateFiles().Where(f => !f.Attributes.HasFlag(FileAttributes.Hidden)))
-                {
-                    if (file.Name.ToLower().Contains(name))
-                    {
-                        var col = directory.EnumerateDirectories().Where(dir => !dir.Attributes.HasFlag(FileAttributes.Hidden)).Cast<FileSystemInfo>().Concat(directory.EnumerateFiles().Where(f => !f.Attributes.HasFlag(FileAttributes.Hidden)).Cast<FileSystemInfo>()).ToList();
-                        _currentPath = directory.FullName;
-                        _position = col.IndexOf(col.Where(f => f.Name.ToLower().Contains(name)).First());
-                        _isFind = true;
-                        return;
-                    }
-                }
+        //    if (SystemItem.HasFolderPermission(directory))
+        //    {
+        //        foreach (var file in directory.EnumerateFiles().Where(f => !f.Attributes.HasFlag(FileAttributes.Hidden)))
+        //        {
+        //            if (file.Name.ToLower().Contains(name))
+        //            {
+        //                var col = directory.EnumerateDirectories().Where(dir => !dir.Attributes.HasFlag(FileAttributes.Hidden)).Cast<FileSystemInfo>().Concat(directory.EnumerateFiles().Where(f => !f.Attributes.HasFlag(FileAttributes.Hidden)).Cast<FileSystemInfo>()).ToList();
+        //                _currentPath = directory.FullName;
+        //                _position = col.IndexOf(col.Where(f => f.Name.ToLower().Contains(name)).First());
+        //                _isFind = true;
+        //                return;
+        //            }
+        //        }
 
-                foreach (var dir in directory.EnumerateDirectories().Where(d => !d.Attributes.HasFlag(FileAttributes.Hidden)))
-                {
-                    FindFileByName(name, dir.FullName, graphics);
-                }
-            }
-        }
+        //        foreach (var dir in directory.EnumerateDirectories().Where(d => !d.Attributes.HasFlag(FileAttributes.Hidden)))
+        //        {
+        //            FindFileByName(name, dir.FullName, graphics);
+        //        }
+        //    }
+        //}
 
         private void ShowIfFileFound(ConsoleGraphics graphics)
         {
             if (_isFind == false)
             {
-                Message.ShowMessage("File not found:", "Press Enter to continue", graphics);
-                Message.CloseMessage();
+                //Message.ShowMessage("File not found:", "Press Enter to continue", graphics);
+                //Message.CloseMessage();
             }
 
             _isFind = false;

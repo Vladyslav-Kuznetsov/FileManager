@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.AccessControl;
+using System.Security.Principal;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -52,6 +54,15 @@ namespace FileManager.Services
         //        }
         //    }
 
+        public IEnumerable<SystemItem> GetFolderContent(string path)
+        {
+            DirectoryInfo directory = new DirectoryInfo(path);
+
+            var folders = directory.EnumerateDirectories().Where(dir => !dir.Attributes.HasFlag(FileAttributes.Hidden) && HasFolderPermission(dir)).Select(dir => new FolderItem(dir)).Cast<SystemItem>();
+            var files = directory.EnumerateFiles().Where(file => !file.Attributes.HasFlag(FileAttributes.Hidden)).Select(file => new FileItem(file)).Cast<SystemItem>();
+
+            return folders.Concat(files);
+        }
 
         public void Copy(string sourcePath, string destPath)
         {
@@ -78,6 +89,30 @@ namespace FileManager.Services
             }
         }
 
+        public void Rename(string path, string newName)
+        {
+            string[] arrayStr = path.Split('\\');
+            string destPath = string.Empty;
+
+            if (path.Last() == '\\')
+            {
+                arrayStr[arrayStr.Length - 2] = newName;
+                destPath = string.Join("\\", arrayStr);
+                Directory.Move(path, destPath);
+            }
+            else
+            {
+                arrayStr[arrayStr.Length - 1] = newName;
+                destPath = string.Join("\\", arrayStr);
+                File.Move(path, destPath);
+            }
+        }
+
+        public void CreateNewFolder(string path,string nameFolder)
+        {
+            Directory.CreateDirectory($@"{path}\{nameFolder}");
+        }
+
         private void CopyFolder(string sourcePath, string destPath)
         {
             Directory.CreateDirectory(destPath);
@@ -91,6 +126,37 @@ namespace FileManager.Services
             foreach (string folderPath in Directory.GetDirectories(sourcePath))
             {
                 CopyFolder(folderPath, destPath + "\\" + Path.GetFileName(folderPath));
+            }
+        }
+
+        private static bool HasFolderPermission(DirectoryInfo directoryInfo)
+        {
+            try
+            {
+                DirectorySecurity security = directoryInfo.GetAccessControl();
+                SecurityIdentifier users = new SecurityIdentifier(WellKnownSidType.BuiltinUsersSid, null);
+
+                foreach (AuthorizationRule rule in security.GetAccessRules(true, true, typeof(SecurityIdentifier)))
+                {
+                    if (rule.IdentityReference == users)
+                    {
+                        FileSystemAccessRule rights = (FileSystemAccessRule)rule;
+
+                        if (rights.AccessControlType == AccessControlType.Allow)
+                        {
+                            if (rights.FileSystemRights == (rights.FileSystemRights | FileSystemRights.ReadData))
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                }
+
+                return false;
+            }
+            catch
+            {
+                return false;
             }
         }
     }

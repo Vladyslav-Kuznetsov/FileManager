@@ -33,7 +33,7 @@ namespace FileManager
 
         public virtual void ShowProperties(ConsoleGraphics graphics)
         {
-            Message.ShowMessage("Property definition process in progress", "Please, wait", graphics);
+            //Message.ShowMessage("Property definition process in progress", "Please, wait", graphics);
 
             graphics.FillRectangle(Settings.ActiveColor, Settings.PropertiesCoordinateX, Settings.PropertiesCoordinateY, Settings.PropertiesWidth, Settings.PropertiesHeight);
             graphics.DrawString("Name:", Settings.FontName, Settings.BlackColor, Settings.PropertiesCoordinateX, Settings.PropertiesCoordinateY, Settings.FontSize);
@@ -110,36 +110,36 @@ namespace FileManager
         //    engine.IsCut = true;
         //}
 
-        public static bool HasFolderPermission(DirectoryInfo directoryInfo)
-        {
-            try
-            {
-                DirectorySecurity security = directoryInfo.GetAccessControl();
-                SecurityIdentifier users = new SecurityIdentifier(WellKnownSidType.BuiltinUsersSid, null);
+        //public static bool HasFolderPermission(DirectoryInfo directoryInfo)
+        //{
+        //    try
+        //    {
+        //        DirectorySecurity security = directoryInfo.GetAccessControl();
+        //        SecurityIdentifier users = new SecurityIdentifier(WellKnownSidType.BuiltinUsersSid, null);
 
-                foreach (AuthorizationRule rule in security.GetAccessRules(true, true, typeof(SecurityIdentifier)))
-                {
-                    if (rule.IdentityReference == users)
-                    {
-                        FileSystemAccessRule rights = (FileSystemAccessRule)rule;
+        //        foreach (AuthorizationRule rule in security.GetAccessRules(true, true, typeof(SecurityIdentifier)))
+        //        {
+        //            if (rule.IdentityReference == users)
+        //            {
+        //                FileSystemAccessRule rights = (FileSystemAccessRule)rule;
 
-                        if (rights.AccessControlType == AccessControlType.Allow)
-                        {
-                            if (rights.FileSystemRights == (rights.FileSystemRights | FileSystemRights.ReadData))
-                            {
-                                return true;
-                            }
-                        }
-                    }
-                }
+        //                if (rights.AccessControlType == AccessControlType.Allow)
+        //                {
+        //                    if (rights.FileSystemRights == (rights.FileSystemRights | FileSystemRights.ReadData))
+        //                    {
+        //                        return true;
+        //                    }
+        //                }
+        //            }
+        //        }
 
-                return false;
-            }
-            catch
-            {
-                return false;
-            }
-        }
+        //        return false;
+        //    }
+        //    catch
+        //    {
+        //        return false;
+        //    }
+        //}
 
         protected string ConvertByte(long bytes)
         {

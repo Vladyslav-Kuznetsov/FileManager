@@ -12,8 +12,11 @@ namespace FileManager.UserAction
     {
         public event EventHandler<NavigateEventArgs> Navigated;
         public event Action Switch;
-        public event Action Copy;
-        public event Action Move;
+        public event EventHandler<ServiceEventArgs> Service;
+        //public event Action Copy;
+        //public event Action Move;
+        //public event Action Rename;
+        //public event Action CreateNewFolder;
 
         public void ReadInput()
         {
@@ -37,13 +40,21 @@ namespace FileManager.UserAction
                     Switch?.Invoke();
                     break;
                 case ConsoleKey.F1:
-                    Copy?.Invoke();
+                    Service?.Invoke(this, new ServiceEventArgs() { Type = ServiceCommandType.Copy });
+                    //Copy?.Invoke();
                     break;
                 case ConsoleKey.F2:
-                    Move?.Invoke();
+                    Service?.Invoke(this, new ServiceEventArgs() { Type = ServiceCommandType.Move });
+                    //Move?.Invoke();
                     break;
-                
-
+                case ConsoleKey.F7:
+                    Service?.Invoke(this, new ServiceEventArgs() { Type = ServiceCommandType.Rename });
+                    //Rename?.Invoke();
+                    break;
+                case ConsoleKey.F9:
+                    Service?.Invoke(this, new ServiceEventArgs() { Type = ServiceCommandType.NewFolder});
+                    //CreateNewFolder?.Invoke();
+                    break;
             }
         }
     }

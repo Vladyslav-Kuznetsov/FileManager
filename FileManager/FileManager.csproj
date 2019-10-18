@@ -54,11 +54,13 @@
     <Compile Include="Services\FileSystemService.cs" />
     <Compile Include="UserAction\NavigateEventArgs.cs" />
     <Compile Include="UserAction\NavigateType.cs" />
+    <Compile Include="UserAction\ServiceCommandType.cs" />
+    <Compile Include="UserAction\ServiceEventArgs.cs" />
     <Compile Include="UserAction\UserActionListener.cs" />
     <Compile Include="FileItem.cs" />
     <Compile Include="FolderItem.cs" />
     <Compile Include="Tab.cs" />
-    <Compile Include="Message.cs" />
+    <Compile Include="ModularWindow.cs" />
     <Compile Include="SystemItem.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

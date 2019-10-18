@@ -36,7 +36,7 @@ namespace FileManager
             graphics.DrawString("Is read only:", Settings.FontName, Settings.BlackColor, Settings.PropertiesCoordinateX, Settings.PropertiesCoordinateY + (Settings.FontSize * 6) + 1, Settings.FontSize);
             graphics.DrawString($"{IsReadOnly}", Settings.FontName, Settings.BlackColor, Settings.PropertiesCoordinateX + Settings.PropertiesInfoCoordinateX, Settings.PropertiesCoordinateY + (Settings.FontSize * 6) + 1, Settings.FontSize);
             graphics.FlipPages();
-            Message.CloseMessage();
+            //Message.CloseMessage();
         }
     }
 }
