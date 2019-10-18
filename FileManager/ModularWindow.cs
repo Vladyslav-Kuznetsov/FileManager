@@ -1,6 +1,7 @@
 ﻿using NConsoleGraphics;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace FileManager
 {
@@ -17,10 +18,20 @@ namespace FileManager
         {
             bool exit = false;
             List<char> name = new List<char>(oldName);
+            string text = string.Empty;
 
             while (!exit)
             {
-                Show("Enter name :", string.Join("", name));
+                if (name.Count > 45)
+                {
+                    text = string.Join("", name.Skip(name.Count - 45));
+                }
+                else
+                {
+                    text = string.Join("", name);
+                }
+
+                Show("Enter name :", text);
 
                 ConsoleKeyInfo key = Console.ReadKey(true);
 
@@ -46,7 +57,7 @@ namespace FileManager
         private void Show(string titleText, string inputText)
         {
             _graphics.FillRectangle(Settings.ActiveColor, Settings.MessageWindowCoordinateX, Settings.MessageWindowCoordinateY, Settings.MessageWindowWidth, Settings.MessageWindowHeiht);
-            _graphics.FillRectangle(0xFF0055de, Settings.MessageWindowCoordinateX + 10, Settings.MessageWindowCoordinateY + 40, Settings.MessageWindowWidth - 30, 30);
+            _graphics.FillRectangle(0xFF0055de, Settings.MessageWindowCoordinateX + 10, Settings.MessageWindowCoordinateY + 40, Settings.MessageWindowWidth - 20, 30);
             _graphics.DrawString(titleText, "ISOCPEUR", Settings.BlackColor, Settings.MessageWindowCoordinateX + 10, Settings.MessageWindowCoordinateY);
             _graphics.DrawString(inputText, "ISOCPEUR", Settings.BlackColor, Settings.MessageWindowCoordinateX + 10, Settings.MessageWindowCoordinateY + 40);
             _graphics.FlipPages();

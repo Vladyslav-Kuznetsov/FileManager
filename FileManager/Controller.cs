@@ -20,6 +20,7 @@ namespace FileManager
             _graphics = new ConsoleGraphics();
             _fileSystemService = new FileSystemService();
             _userActionListener = new UserActionListener();
+
             _tabs = new List<Tab>()
             {
                 new Tab(Settings.LeftWindowCoordinateX, _userActionListener, _fileSystemService) { IsActive = true},
@@ -69,96 +70,63 @@ namespace FileManager
 
         private void NewFolder()
         {
-            for (int i = 0; i < _tabs.Count; i++)
-            {
-                if (_tabs[i].IsActive == true)
-                {
-                    string nameFolder = _modularWindow.EnterName("New folder");
-                    _fileSystemService.CreateNewFolder(_tabs[i].CurrentPath, nameFolder);
-                    return;
-                }
-            }
+            string nameFolder = _modularWindow.EnterName("New folder");
+            _fileSystemService.CreateNewFolder(GetActiveAndNextTabs().active.CurrentPath, nameFolder);
         }
 
         private void Rename()
         {
-            for (int i = 0; i < _tabs.Count; i++)
-            {
-                if (_tabs[i].IsActive == true)
-                {
-                    string newName = _modularWindow.EnterName(_tabs[i].SelectedItem.Name);
-                    string path = (_tabs[i].SelectedItem is FolderItem) ? _tabs[i].SelectedItem.FullName + @"\" : _tabs[i].SelectedItem.FullName;
-                    _fileSystemService.Rename(path, newName);
-                    return;
-                }
-            }
+            string newName = _modularWindow.EnterName(GetActiveAndNextTabs().active.SelectedItem.Name);
+            string path = (GetActiveAndNextTabs().active.SelectedItem is FolderItem) ? GetActiveAndNextTabs().active.SelectedItem.FullName + @"\" : GetActiveAndNextTabs().active.SelectedItem.FullName;
+            _fileSystemService.Rename(path, newName);
         }
 
         private void Move()
         {
-            for (int i = 0; i < _tabs.Count; i++)
-            {
-                if (_tabs[i].IsActive == true)
-                {
-                    string sourcePath = (_tabs[i].SelectedItem is FolderItem) ? _tabs[i].SelectedItem.FullName + @"\" : _tabs[i].SelectedItem.FullName;
-
-                    if (i == _tabs.Count - 1)
-                    {
-                        _fileSystemService.Move(sourcePath, _tabs[0].CurrentPath + $@"\{_tabs[i].SelectedItem.Name}");
-                    }
-                    else
-                    {
-                        _fileSystemService.Move(sourcePath, _tabs[i + 1].CurrentPath + $@"\{_tabs[i].SelectedItem.Name}");
-                    }
-
-                    return;
-                }
-            }
+            var tabs = GetActiveAndNextTabs();
+            string sourcePath = (tabs.active.SelectedItem is FolderItem) ? tabs.active.SelectedItem.FullName + @"\" : tabs.active.SelectedItem.FullName;
+            _fileSystemService.Move(sourcePath, tabs.next.CurrentPath + $@"\{tabs.active.SelectedItem.Name}");
         }
 
         private void Copy()
         {
-            for (int i = 0; i < _tabs.Count; i++)
-            {
-                if (_tabs[i].IsActive == true)
-                {
-                    string sourcePath = (_tabs[i].SelectedItem is FolderItem) ? _tabs[i].SelectedItem.FullName + @"\" : _tabs[i].SelectedItem.FullName;
-
-                    if (i == _tabs.Count - 1)
-                    {
-                        _fileSystemService.Copy(sourcePath, _tabs[0].CurrentPath + $@"\{_tabs[i].SelectedItem.Name}");
-                    }
-                    else
-                    {
-                        _fileSystemService.Copy(sourcePath, _tabs[i + 1].CurrentPath + $@"\{_tabs[i].SelectedItem.Name}");
-                    }
-
-                    return;
-                }
-            }
+            var tabs = GetActiveAndNextTabs();
+            string sourcePath = (tabs.active.SelectedItem is FolderItem) ? tabs.active.SelectedItem.FullName + @"\" : tabs.active.SelectedItem.FullName;
+            _fileSystemService.Copy(sourcePath, tabs.next.CurrentPath + $@"\{tabs.active.SelectedItem.Name}");
         }
 
         private void SelectNextTab()
         {
+            var tabs = GetActiveAndNextTabs();
+            tabs.active.IsActive = false;
+            tabs.next.IsActive = true;
+        }
+
+        private (Tab active, Tab next) GetActiveAndNextTabs()
+        {
+            Tab active = null;
+            Tab next = null;
+
             for (int i = 0; i < _tabs.Count; i++)
             {
                 if (_tabs[i].IsActive == true)
                 {
-                    _tabs[i].IsActive = false;
+                    active = _tabs[i];
 
                     if (i == _tabs.Count - 1)
                     {
-                        _tabs[0].IsActive = true;
+                        next = _tabs[0];
                     }
                     else
                     {
-                        _tabs[i + 1].IsActive = true;
+                        next = _tabs[i + 1];
                     }
 
-                    return;
+                    break;
                 }
             }
 
+            return (active, next);
         }
 
         private void ShowHints()
