@@ -6,11 +6,8 @@ using System.Threading.Tasks;
 
 namespace FileManager.UserAction
 {
-    public enum ServiceCommandType
+    public class OperationEventArgs : EventArgs
     {
-        Copy,
-        Move,
-        Rename,
-        NewFolder
+        public OperationType Type { get; set; }
     }
 }

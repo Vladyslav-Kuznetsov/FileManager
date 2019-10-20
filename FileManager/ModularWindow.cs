@@ -22,16 +22,8 @@ namespace FileManager
 
             while (!exit)
             {
-                if (name.Count > 45)
-                {
-                    text = string.Join("", name.Skip(name.Count - 45));
-                }
-                else
-                {
-                    text = string.Join("", name);
-                }
-
-                Show("Enter name :", text);
+                text = (name.Count > 45) ? string.Join("", name.Skip(name.Count - 45)) : string.Join("", name);
+                DrawWindow("Enter name :", text);
 
                 ConsoleKeyInfo key = Console.ReadKey(true);
 
@@ -54,7 +46,7 @@ namespace FileManager
             return string.Join("", name);
         }
 
-        private void Show(string titleText, string inputText)
+        private void DrawWindow(string titleText, string inputText)
         {
             _graphics.FillRectangle(Settings.ActiveColor, Settings.MessageWindowCoordinateX, Settings.MessageWindowCoordinateY, Settings.MessageWindowWidth, Settings.MessageWindowHeiht);
             _graphics.FillRectangle(0xFF0055de, Settings.MessageWindowCoordinateX + 10, Settings.MessageWindowCoordinateY + 40, Settings.MessageWindowWidth - 20, 30);
@@ -62,21 +54,5 @@ namespace FileManager
             _graphics.DrawString(inputText, "ISOCPEUR", Settings.BlackColor, Settings.MessageWindowCoordinateX + 10, Settings.MessageWindowCoordinateY + 40);
             _graphics.FlipPages();
         }
-
-        //    public static void CloseMessage()
-        //    {
-        //        bool exit = false;
-
-        //        while (!exit)
-        //        {
-        //            ConsoleKeyInfo key = Console.ReadKey(true);
-
-        //            if (key.Key == ConsoleKey.Enter)
-        //            {
-        //                exit = true;
-        //            }
-        //        }
-        //    }
-        //}
     }
 }

@@ -1,5 +1,6 @@
 ﻿using FileManager.Services;
 using FileManager.UserAction;
+using FileManager.Views;
 using NConsoleGraphics;
 using System;
 using System.Collections.Generic;
@@ -12,25 +13,30 @@ namespace FileManager
         private readonly UserActionListener _userActionListener;
         private readonly FileSystemService _fileSystemService;
         private readonly List<Tab> _tabs;
+        private readonly SystemItemView _systemItemView;
+        private readonly TabView _tabView;
         private readonly ModularWindow _modularWindow;
-        public bool Exit { get; set; }
-
         public Controller()
         {
             _graphics = new ConsoleGraphics();
-            _fileSystemService = new FileSystemService();
             _userActionListener = new UserActionListener();
+            _fileSystemService = new FileSystemService();
 
             _tabs = new List<Tab>()
             {
-                new Tab(Settings.LeftWindowCoordinateX, _userActionListener, _fileSystemService) { IsActive = true},
-                new Tab(Settings.RigthWindowCoordinateX, _userActionListener, _fileSystemService)
+                new Tab(Settings.LeftWindowCoordinateX, Settings.WindowCoordinateY, _userActionListener, _fileSystemService) { IsActive = true},
+                new Tab(Settings.RigthWindowCoordinateX,Settings.WindowCoordinateY, _userActionListener, _fileSystemService)
             };
 
+            _systemItemView = new SystemItemView(_graphics);
+            _tabView = new TabView(_tabs, _graphics, _systemItemView);
             _modularWindow = new ModularWindow(_graphics);
-            _userActionListener.Switch += SelectNextTab;
-            _userActionListener.Service += Service;
+            _userActionListener.TabSwitching += SelectNextTab;
+            _userActionListener.PropertyRequest += GetProperty;
+            _userActionListener.FileServiceOperation += OperationEventHandler;
         }
+
+        public bool Exit { get; set; }
 
         public void Start()
         {
@@ -38,31 +44,31 @@ namespace FileManager
             {
                 _graphics.FillRectangle(Settings.BlackColor, 0, 0, _graphics.ClientWidth, _graphics.ClientHeight);
                 ShowHints();
-
-                foreach (var tab in _tabs)
-                {
-                    tab.Show(_graphics);
-                }
-
+                _tabView.Show();
                 _graphics.FlipPages();
                 _userActionListener.ReadInput();
             }
         }
 
-        private void Service(object sender, ServiceEventArgs e)
+        private void GetProperty()
+        {
+            _systemItemView.ShowProperties(GetActiveAndNextTabs().active.SelectedItem);
+        }
+
+        private void OperationEventHandler(object sender, OperationEventArgs e)
         {
             switch (e.Type)
             {
-                case ServiceCommandType.Copy:
+                case OperationType.Copy:
                     Copy();
                     break;
-                case ServiceCommandType.Move:
+                case OperationType.Move:
                     Move();
                     break;
-                case ServiceCommandType.Rename:
+                case OperationType.Rename:
                     Rename();
                     break;
-                case ServiceCommandType.NewFolder:
+                case OperationType.NewFolder:
                     NewFolder();
                     break;
             }
@@ -132,7 +138,7 @@ namespace FileManager
         private void ShowHints()
         {
             _graphics.FillRectangle(Settings.HintsColor, Settings.LeftWindowCoordinateX, Settings.HintsCoordinateY, Settings.HintsWidth, Settings.HintsHeight);
-            _graphics.DrawString(Settings.Hints, Settings.FontName, Settings.BlackColor, Settings.LeftWindowCoordinateX, Settings.HintsCoordinateY, 18);
+            _graphics.DrawString(Settings.Hints, Settings.FontName, Settings.BlackColor, Settings.LeftWindowCoordinateX, Settings.HintsCoordinateY, 17);
         }
     }
 }

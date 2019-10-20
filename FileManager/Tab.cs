@@ -1,30 +1,42 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using FileManager.Services;
 using FileManager.UserAction;
-using NConsoleGraphics;
 
 namespace FileManager
 {
     public class Tab
     {
-        private readonly int _windowCordinateX;
         private readonly List<DriveInfo> _drives;
         private readonly List<SystemItem> _folderContent;
         private readonly UserActionListener _listener;
         private readonly FileSystemService _fileSystemService;
-        private int _startPosition;
-        private int _endPosition;
-        private int _position;
-        private string _currentPath;
-        private bool _isFind;
         private bool _isActive;
+
+        public Tab(int coordinateX, int coordinateY, UserActionListener listener, FileSystemService fileSystemService)
+        {
+            CoordinateX = coordinateX;
+            CoordinateY = coordinateY;
+            CurrentPath = string.Empty;
+            _folderContent = new List<SystemItem>();
+            _drives = new List<DriveInfo>();
+            _drives.AddRange(DriveInfo.GetDrives().Where(drive => drive.DriveType == DriveType.Fixed));
+            _listener = listener;
+            _fileSystemService = fileSystemService;
+        }
+
+        public int CoordinateX { get; }
+        public int CoordinateY { get; }
+        public string CurrentPath { get; private set; }
+        public int StartPosition { get; private set; }
+        public int EndPosition { get; private set; }
+        public int Position { get; private set; }
+        
+        public SystemItem SelectedItem { get => _folderContent[Position]; }
         public bool IsActive
         {
-            get { return _isActive; }
+            get => _isActive;
             set
             {
                 if (_isActive == value)
@@ -44,48 +56,33 @@ namespace FileManager
                 }
             }
         }
-        public string CurrentPath
+
+        public List<SystemItem> GetFolderContent()
         {
-            get
-            {
-                return _currentPath;
-            }
+            return new List<SystemItem>(_folderContent);
         }
 
-        public SystemItem SelectedItem
+        public List<DriveInfo> GetListDrives()
         {
-            get
-            {
-                return _folderContent[_position];
-            }
+            return new List<DriveInfo>(_drives);
         }
 
-        public Tab(int windowCordinateX, UserActionListener listener, FileSystemService fileSystemService)
+        public void InitCurrentDirectory()
         {
-            _windowCordinateX = windowCordinateX;
-            _currentPath = string.Empty;
-            _folderContent = new List<SystemItem>();
-            _drives = new List<DriveInfo>();
-            _drives.AddRange(DriveInfo.GetDrives().Where(drive => drive.DriveType == DriveType.Fixed));
-            _isFind = false;
-            _listener = listener;
-            _fileSystemService = fileSystemService;
+            _folderContent.Clear();
+            _folderContent.AddRange(_fileSystemService.GetFolderContent(CurrentPath));
+            EndPosition = (_folderContent.Count > StartPosition + Settings.NumberOfDisplayedStrings) ? StartPosition + Settings.NumberOfDisplayedStrings : _folderContent.Count;
         }
 
-        public void Show(ConsoleGraphics graphics)
+        public void CheckPosition()
         {
-            uint color = (IsActive) ? Settings.ActiveColor : Settings.InactiveColor;
-            graphics.DrawRectangle(color, _windowCordinateX, Settings.WindowCoordinateY, Settings.WindowWidth, Settings.WindowHeight);
-
-            if (_currentPath == string.Empty)
+            if (Position > _folderContent.Count - 1)
             {
-                DisplayDrives(graphics, color);
+                Position--;
             }
-            else
+            else if (Position < 0)
             {
-                InitCurrentDirectory();
-                CheckPosition();
-                DisplayFolderContent(graphics, color);
+                Position++;
             }
         }
 
@@ -99,13 +96,13 @@ namespace FileManager
                 case NavigateType.Down:
                     MoveDown();
                     break;
-                case NavigateType.Enter when _currentPath == string.Empty:
-                    InFolder(_drives[_position].Name);
+                case NavigateType.Enter when CurrentPath == string.Empty:
+                    InFolder(_drives[Position].Name);
                     break;
-                case NavigateType.Enter when _folderContent.Any() && (_folderContent[_position] is FolderItem):
-                    InFolder(_folderContent[_position].Name);
+                case NavigateType.Enter when _folderContent.Any() && (_folderContent[Position] is FolderItem):
+                    InFolder(_folderContent[Position].Name);
                     break;
-                case NavigateType.Back when _currentPath == string.Empty:
+                case NavigateType.Back when CurrentPath == string.Empty:
                     break;
                 case NavigateType.Back:
                     InFolder("..");
@@ -113,185 +110,58 @@ namespace FileManager
             }
         }
 
-        private void DisplayDrives(ConsoleGraphics graphics, uint color)
-        {
-            int coordinateY = Settings.WindowCoordinateY;
-
-            for (int i = 0; i < _drives.Count; i++)
-            {
-                if (i == _position)
-                {
-                    graphics.FillRectangle(color, _windowCordinateX, coordinateY + 5, Settings.WindowWidth, Settings.FontSize);
-                    graphics.DrawString($"{_drives[i].Name}", Settings.FontName, Settings.BlackColor, _windowCordinateX, coordinateY, Settings.FontSize);
-                }
-                else
-                {
-                    graphics.DrawString($"{_drives[i].Name}", Settings.FontName, color, _windowCordinateX, coordinateY, Settings.FontSize);
-                }
-
-                coordinateY += Settings.FontSize + 1;
-            }
-        }
-
-        private void DisplayFolderContent(ConsoleGraphics graphics, uint color)
-        {
-            int coordinateY = Settings.WindowCoordinateY;
-            _endPosition = (_folderContent.Count > _startPosition + Settings.NumberOfDisplayedStrings) ? _startPosition + Settings.NumberOfDisplayedStrings : _folderContent.Count;
-
-            for (int i = _startPosition; i < _endPosition; i++)
-            {
-                if (i == _position)
-                {
-                    graphics.FillRectangle(color, _windowCordinateX, coordinateY + 5, Settings.WindowWidth, Settings.FontSize);
-                    _folderContent[i].ShowInfo(graphics, Settings.BlackColor, _windowCordinateX, coordinateY);
-                }
-                else
-                {
-                    _folderContent[i].ShowInfo(graphics, color, _windowCordinateX, coordinateY);
-                }
-
-                coordinateY += Settings.FontSize + 1;
-            }
-        }
-
-        private void InitCurrentDirectory()
-        {
-            _folderContent.Clear();
-            _folderContent.AddRange(_fileSystemService.GetFolderContent(_currentPath));
-        }
-
-        private void CheckPosition()
-        {
-            if (_position > _folderContent.Count - 1)
-            {
-                _position--;
-            }
-            else if (_position < 0)
-            {
-                _position++;
-            }
-        }
-
         private void SetStartingPosition()
         {
-            if (_position == _startPosition - 1 && _startPosition != 0)
+            if (Position == StartPosition - 1 && StartPosition != 0)
             {
-                _startPosition--;
+                StartPosition--;
             }
-            else if (_position == _endPosition && _endPosition != _folderContent.Count)
+            else if (Position == EndPosition && EndPosition != _folderContent.Count)
             {
-                _startPosition++;
+                StartPosition++;
             }
-            else if (_position == 0)
+            else if (Position == 0)
             {
-                _startPosition = 0;
+                StartPosition = 0;
             }
-            else if (_position == _folderContent.Count - 1 && _endPosition != _folderContent.Count)
+            else if (Position == _folderContent.Count - 1 && EndPosition != _folderContent.Count)
             {
-                _startPosition = _folderContent.Count - Settings.NumberOfDisplayedStrings;
+                StartPosition = _folderContent.Count - Settings.NumberOfDisplayedStrings;
             }
         }
 
         private void MoveDown()
         {
-            if (_currentPath == string.Empty)
+            if (CurrentPath == string.Empty)
             {
-                _position = (_position++ == _drives.Count - 1) ? 0 : _position++;
+                Position = (Position++ == _drives.Count - 1) ? 0 : Position++;
             }
             else
             {
-                _position = (_position++ == _folderContent.Count - 1) ? 0 : _position++;
+                Position = (Position++ == _folderContent.Count - 1) ? 0 : Position++;
                 SetStartingPosition();
             }
         }
 
         private void MoveUp()
         {
-            if (_currentPath == string.Empty)
+            if (CurrentPath == string.Empty)
             {
-                _position = (_position-- <= 0) ? _drives.Count - 1 : _position--;
+                Position = (Position-- <= 0) ? _drives.Count - 1 : Position--;
             }
             else
             {
-                _position = (_position-- <= 0) ? _folderContent.Count - 1 : _position--;
+                Position = (Position-- <= 0) ? _folderContent.Count - 1 : Position--;
                 SetStartingPosition();
             }
         }
 
         private void InFolder(string folderPath)
         {
-            _currentPath = Path.Combine(_currentPath, folderPath);
-            _currentPath = new DirectoryInfo(_currentPath).FullName;
-            _position = 0;
-            _startPosition = 0;
-        }
-
-        //private string EnterName(ConsoleGraphics graphics)
-        //{
-        //    bool exit = false;
-        //    List<char> name = new List<char>();
-        //    string result = string.Empty;
-
-        //    while (!exit)
-        //    {
-        //        Message.ShowMessage("Enter name:", result, graphics);
-        //        ConsoleKeyInfo key = Console.ReadKey(true);
-
-        //        switch (key.Key)
-        //        {
-        //            case ConsoleKey.Enter:
-        //                exit = true;
-        //                break;
-        //            case ConsoleKey.Backspace when name.Count == 0:
-        //                break;
-        //            case ConsoleKey.Backspace:
-        //                name.RemoveAt(name.Count - 1);
-        //                break;
-        //            default:
-        //                name.Add(key.KeyChar);
-        //                break;
-        //        }
-
-        //        result = string.Join("", name);
-        //    }
-        //    return result;
-        //}
-
-        //private void FindFileByName(string name, string currentPath, ConsoleGraphics graphics)
-        //{
-        //    DirectoryInfo directory = new DirectoryInfo(currentPath);
-        //    //Message.ShowMessage("Search in folder:", directory.Name, graphics);
-
-        //    if (SystemItem.HasFolderPermission(directory))
-        //    {
-        //        foreach (var file in directory.EnumerateFiles().Where(f => !f.Attributes.HasFlag(FileAttributes.Hidden)))
-        //        {
-        //            if (file.Name.ToLower().Contains(name))
-        //            {
-        //                var col = directory.EnumerateDirectories().Where(dir => !dir.Attributes.HasFlag(FileAttributes.Hidden)).Cast<FileSystemInfo>().Concat(directory.EnumerateFiles().Where(f => !f.Attributes.HasFlag(FileAttributes.Hidden)).Cast<FileSystemInfo>()).ToList();
-        //                _currentPath = directory.FullName;
-        //                _position = col.IndexOf(col.Where(f => f.Name.ToLower().Contains(name)).First());
-        //                _isFind = true;
-        //                return;
-        //            }
-        //        }
-
-        //        foreach (var dir in directory.EnumerateDirectories().Where(d => !d.Attributes.HasFlag(FileAttributes.Hidden)))
-        //        {
-        //            FindFileByName(name, dir.FullName, graphics);
-        //        }
-        //    }
-        //}
-
-        private void ShowIfFileFound(ConsoleGraphics graphics)
-        {
-            if (_isFind == false)
-            {
-                //Message.ShowMessage("File not found:", "Press Enter to continue", graphics);
-                //Message.CloseMessage();
-            }
-
-            _isFind = false;
+            CurrentPath = Path.Combine(CurrentPath, folderPath);
+            CurrentPath = new DirectoryInfo(CurrentPath).FullName;
+            Position = 0;
+            StartPosition = 0;
         }
     }
 }
