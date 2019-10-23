@@ -7,7 +7,7 @@ namespace FileManager
     public class FileItem : SystemItem
     {
         public FileItem(FileInfo file) :
-            base((file.Name.Length > 45) ? string.Join("", file.Name.Take(45)) + "..." : file.Name, file.FullName, file.Directory, file.Directory.Root.Name, file.LastAccessTime, file.LastWriteTime)
+            base(file.Name, file.FullName,  file.Directory.Name, file.Directory.Root.Name, file.LastAccessTime, file.LastWriteTime)
         {
             Extension = file.Extension;
             Size = file.Length;

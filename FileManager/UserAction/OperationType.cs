@@ -11,6 +11,7 @@ namespace FileManager.UserAction
         Copy,
         Move,
         Rename,
-        NewFolder
+        NewFolder,
+        Search
     }
 }

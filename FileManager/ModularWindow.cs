@@ -18,12 +18,12 @@ namespace FileManager
         {
             bool exit = false;
             List<char> name = new List<char>(oldName);
-            string text = string.Empty;
+            string text;
 
             while (!exit)
             {
                 text = (name.Count > 45) ? string.Join("", name.Skip(name.Count - 45)) : string.Join("", name);
-                DrawWindow("Enter name :", text);
+                ShowWindow("Enter name :", text, true, false);
 
                 ConsoleKeyInfo key = Console.ReadKey(true);
 
@@ -46,13 +46,26 @@ namespace FileManager
             return string.Join("", name);
         }
 
-        private void DrawWindow(string titleText, string inputText)
+        public void ShowWindow(string titleText, string inputText, bool isDialogWindow, bool waitForClosing)
         {
             _graphics.FillRectangle(Settings.ActiveColor, Settings.MessageWindowCoordinateX, Settings.MessageWindowCoordinateY, Settings.MessageWindowWidth, Settings.MessageWindowHeiht);
-            _graphics.FillRectangle(0xFF0055de, Settings.MessageWindowCoordinateX + 10, Settings.MessageWindowCoordinateY + 40, Settings.MessageWindowWidth - 20, 30);
-            _graphics.DrawString(titleText, "ISOCPEUR", Settings.BlackColor, Settings.MessageWindowCoordinateX + 10, Settings.MessageWindowCoordinateY);
-            _graphics.DrawString(inputText, "ISOCPEUR", Settings.BlackColor, Settings.MessageWindowCoordinateX + 10, Settings.MessageWindowCoordinateY + 40);
+
+            if (isDialogWindow)
+            {
+                _graphics.FillRectangle(0xFF0055de, Settings.MessageWindowCoordinateX + 10, Settings.MessageWindowCoordinateY + 40, Settings.MessageWindowWidth - 20, 30);
+            }
+
+            _graphics.DrawString(titleText, Settings.FontName, Settings.BlackColor, Settings.MessageWindowCoordinateX + 10, Settings.MessageWindowCoordinateY);
+            _graphics.DrawString(inputText, Settings.FontName, Settings.BlackColor, Settings.MessageWindowCoordinateX + 10, Settings.MessageWindowCoordinateY + 40);
             _graphics.FlipPages();
+
+            while (waitForClosing)
+            {
+                if (Console.ReadKey(true).Key == ConsoleKey.Enter)
+                {
+                    return;
+                }
+            }
         }
     }
 }

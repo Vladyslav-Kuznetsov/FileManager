@@ -28,11 +28,11 @@ namespace FileManager
 
         public int CoordinateX { get; }
         public int CoordinateY { get; }
-        public string CurrentPath { get; private set; }
+        public string CurrentPath { get;  set; }
         public int StartPosition { get; private set; }
         public int EndPosition { get; private set; }
-        public int Position { get; private set; }
-        
+        public int Position { get;  set; }
+        public bool IsNotEmpty => _folderContent.Any();
         public SystemItem SelectedItem { get => _folderContent[Position]; }
         public bool IsActive
         {
@@ -99,13 +99,16 @@ namespace FileManager
                 case NavigateType.Enter when CurrentPath == string.Empty:
                     InFolder(_drives[Position].Name);
                     break;
-                case NavigateType.Enter when _folderContent.Any() && (_folderContent[Position] is FolderItem):
+                case NavigateType.Enter when IsNotEmpty && (_folderContent[Position] is FolderItem):
                     InFolder(_folderContent[Position].Name);
                     break;
                 case NavigateType.Back when CurrentPath == string.Empty:
                     break;
                 case NavigateType.Back:
                     InFolder("..");
+                    break;
+                case NavigateType.Root when CurrentPath != string.Empty:
+                    InFolder(Path.GetPathRoot(CurrentPath));
                     break;
             }
         }

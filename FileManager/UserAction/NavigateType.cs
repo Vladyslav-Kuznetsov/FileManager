@@ -12,5 +12,6 @@ namespace FileManager.UserAction
         Down,
         Back,
         Enter,
+        Root
     }
 }

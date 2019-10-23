@@ -11,15 +11,10 @@ namespace FileManager.Services
 {
     public class FileSystemService
     {
-        
+
         public IEnumerable<SystemItem> GetFolderContent(string path)
         {
-            DirectoryInfo directory = new DirectoryInfo(path);
-
-            var folders = directory.EnumerateDirectories().Where(dir => !dir.Attributes.HasFlag(FileAttributes.Hidden) && HasFolderPermission(dir)).Select(dir => new FolderItem(dir)).Cast<SystemItem>();
-            var files = directory.EnumerateFiles().Where(file => !file.Attributes.HasFlag(FileAttributes.Hidden)).Select(file => new FileItem(file)).Cast<SystemItem>();
-
-            return folders.Concat(files);
+            return GetFolders(path).Cast<SystemItem>().Concat(GetFiles(path).Cast<SystemItem>());
         }
 
         public void Copy(string sourcePath, string destPath)
@@ -66,7 +61,7 @@ namespace FileManager.Services
             }
         }
 
-        public void CreateNewFolder(string path,string nameFolder)
+        public void CreateNewFolder(string path, string nameFolder)
         {
             Directory.CreateDirectory($@"{path}\{nameFolder}");
         }
@@ -87,7 +82,71 @@ namespace FileManager.Services
             }
         }
 
-        private  bool HasFolderPermission(DirectoryInfo directoryInfo)
+        public (long size, int countFolder, int countFiles) GetFolderProperties(string path)
+        {
+            DirectoryInfo directoryInfo = new DirectoryInfo(path);
+            var files = directoryInfo.EnumerateFiles().Where(file => !file.Attributes.HasFlag(FileAttributes.Hidden));
+            var directories = directoryInfo.EnumerateDirectories().Where(dir => !dir.Attributes.HasFlag(FileAttributes.Hidden) && HasFolderPermission(dir));
+
+            long size = files.Sum(f => f.Length);
+            int countFiles = files.Count();
+            int countFolders = directories.Count();
+
+            foreach (var d in directories)
+            {
+                var result = GetFolderProperties(d.FullName);
+                size += result.size;
+                countFiles += result.countFiles;
+                countFolders += result.countFolder;
+            }
+
+            return (size, countFolders, countFiles);
+        }
+
+        public (string path, int position) FindFileByName(string name, string currentPath)
+        {
+            DirectoryInfo directory = new DirectoryInfo(currentPath);
+            
+
+
+            if (HasFolderPermission(directory))
+            {
+                foreach (var file in GetFiles(directory.FullName))
+                {
+                    if (file.Name.ToLower().Contains(name))
+                    {
+                        var folderContent = GetFolderContent(directory.FullName).ToList();
+                        return (directory.FullName, folderContent.FindIndex(s => s.FullName == file.FullName));
+                    }
+                }
+
+                foreach (var dir in GetFolders(directory.FullName))
+                {
+                    var result = FindFileByName(name, dir.FullName);
+
+                    if (result.position != -1)
+                    {
+                        return result;
+                    }
+                }
+            }
+
+            return (string.Empty, -1);
+        }
+
+        private IEnumerable<FileItem> GetFiles(string path)
+        {
+            DirectoryInfo directory = new DirectoryInfo(path);
+            return directory.EnumerateFiles().Where(file => !file.Attributes.HasFlag(FileAttributes.Hidden)).Select(file => new FileItem(file));
+        }
+        private IEnumerable<FolderItem> GetFolders(string path)
+        {
+            DirectoryInfo directory = new DirectoryInfo(path);
+            return directory.EnumerateDirectories().Where(dir => !dir.Attributes.HasFlag(FileAttributes.Hidden) && HasFolderPermission(dir)).Select(dir => new FolderItem(dir));
+
+        }
+
+        private bool HasFolderPermission(DirectoryInfo directoryInfo)
         {
             try
             {

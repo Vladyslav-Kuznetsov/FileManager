@@ -4,6 +4,7 @@ using FileManager.Views;
 using NConsoleGraphics;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace FileManager
 {
@@ -52,25 +53,59 @@ namespace FileManager
 
         private void GetProperty()
         {
-            _systemItemView.ShowProperties(GetActiveAndNextTabs().active.SelectedItem);
+            if (!GetActiveAndNextTabs().active.IsNotEmpty)
+            {
+                return;
+            }
+
+            if (GetActiveAndNextTabs().active.SelectedItem is FolderItem folder)
+            {
+                _modularWindow.ShowWindow("Properties are being processed", "Please, wait", false, false);
+                var info = _fileSystemService.GetFolderProperties(folder.FullName);
+                _systemItemView.ShowProperties(new FolderItem(folder, info.size, info.countFolder, info.countFiles));
+            }
+            else
+            {
+                _systemItemView.ShowProperties(GetActiveAndNextTabs().active.SelectedItem);
+            }
         }
 
         private void OperationEventHandler(object sender, OperationEventArgs e)
         {
             switch (e.Type)
             {
-                case OperationType.Copy:
+                case OperationType.Copy when GetActiveAndNextTabs().active.IsNotEmpty:
                     Copy();
                     break;
-                case OperationType.Move:
+                case OperationType.Move when GetActiveAndNextTabs().active.IsNotEmpty:
                     Move();
                     break;
-                case OperationType.Rename:
+                case OperationType.Rename when GetActiveAndNextTabs().active.IsNotEmpty:
                     Rename();
                     break;
-                case OperationType.NewFolder:
+                case OperationType.NewFolder when GetActiveAndNextTabs().active.CurrentPath != string.Empty:
                     NewFolder();
                     break;
+                case OperationType.Search when GetActiveAndNextTabs().active.CurrentPath != string.Empty:
+                    SearchFile();
+                    break;
+            }
+        }
+
+        private void SearchFile()
+        {
+            var name = _modularWindow.EnterName("");
+            _modularWindow.ShowWindow("Search in progress", "Please, wait", false, false);
+            var result = _fileSystemService.FindFileByName(name.ToLower(), GetActiveAndNextTabs().active.CurrentPath);
+
+            if (result.position == -1)
+            {
+                _modularWindow.ShowWindow("File not found", "Press Enter to continue", false, true);
+            }
+            else
+            {
+                GetActiveAndNextTabs().active.CurrentPath = result.path;
+                GetActiveAndNextTabs().active.Position = result.position;
             }
         }
 

@@ -27,6 +27,9 @@ namespace FileManager.UserAction
                 case ConsoleKey.Backspace:
                     Navigated?.Invoke(this, new NavigateEventArgs() { Type = NavigateType.Back });
                     break;
+                case ConsoleKey.F4:
+                    Navigated?.Invoke(this, new NavigateEventArgs() { Type = NavigateType.Root });
+                    break;
                 case ConsoleKey.Tab:
                     TabSwitching?.Invoke();
                     break;
@@ -41,6 +44,9 @@ namespace FileManager.UserAction
                     break;
                 case ConsoleKey.F7:
                     FileServiceOperation?.Invoke(this, new OperationEventArgs() { Type = OperationType.Rename });
+                    break;
+                case ConsoleKey.F8:
+                    FileServiceOperation?.Invoke(this, new OperationEventArgs() { Type = OperationType.Search });
                     break;
                 case ConsoleKey.F9:
                     FileServiceOperation?.Invoke(this, new OperationEventArgs() { Type = OperationType.NewFolder});
