@@ -44,18 +44,18 @@ namespace FileManager.Views
         private void DisplayDrives(uint color, Tab tab)
         {
             int textCoordinateY = tab.CoordinateY;
-            var listItem = tab.GetListDrives();
+            var listDrives = tab.GetListDrives();
 
-            for (int i = 0; i < listItem.Count; i++)
+            for (int i = 0; i < listDrives.Count; i++)
             {
                 if (i == tab.Position)
                 {
                     _graphics.FillRectangle(color, tab.CoordinateX, textCoordinateY + 5, Settings.TabWidth, Settings.FontSize);
-                    _graphics.DrawString($"{listItem[i].Name}", Settings.FontName, Settings.BlackColor, tab.CoordinateX, textCoordinateY, Settings.FontSize);
+                    _graphics.DrawString($"{listDrives[i].Name}", Settings.FontName, Settings.BlackColor, tab.CoordinateX, textCoordinateY, Settings.FontSize);
                 }
                 else
                 {
-                    _graphics.DrawString($"{listItem[i].Name}", Settings.FontName, color, tab.CoordinateX, textCoordinateY, Settings.FontSize);
+                    _graphics.DrawString($"{listDrives[i].Name}", Settings.FontName, color, tab.CoordinateX, textCoordinateY, Settings.FontSize);
                 }
 
                 textCoordinateY += Settings.FontSize + 1;
@@ -65,18 +65,18 @@ namespace FileManager.Views
         private void DisplayFolderContent(uint color, Tab tab)
         {
             int textCoordinateY = tab.CoordinateY;
-            var listItem = tab.GetFolderContent();
+            var folderContent = tab.GetFolderContent();
 
             for (int i = tab.StartPosition; i < tab.EndPosition; i++)
             {
                 if (i == tab.Position)
                 {
                     _graphics.FillRectangle(color, tab.CoordinateX, textCoordinateY + 5, Settings.TabWidth, Settings.FontSize);
-                    _systemItemView.ShowInfo(listItem[i], Settings.BlackColor, tab.CoordinateX, textCoordinateY);
+                    _systemItemView.ShowInfo(folderContent[i], Settings.BlackColor, tab.CoordinateX, textCoordinateY);
                 }
                 else
                 {
-                    _systemItemView.ShowInfo(listItem[i], color, tab.CoordinateX, textCoordinateY);
+                    _systemItemView.ShowInfo(folderContent[i], color, tab.CoordinateX, textCoordinateY);
                 }
 
                 textCoordinateY += Settings.FontSize + 1;

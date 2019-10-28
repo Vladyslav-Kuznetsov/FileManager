@@ -2,19 +2,27 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Security.AccessControl;
-using System.Security.Principal;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FileManager.Services
 {
     public class FileSystemService
     {
+        public event Action<int, string, int> FileFound;
+        public event Action AccessErrorOccurred;
 
         public IEnumerable<SystemItem> GetFolderContent(string path)
         {
-            return GetFolders(path).Cast<SystemItem>().Concat(GetFiles(path).Cast<SystemItem>());
+            try
+            {
+                return GetFolders(path).Cast<SystemItem>().Concat(GetFiles(path).Cast<SystemItem>());
+            }
+            catch (ArgumentNullException)
+            {
+                Console.Beep();
+
+                AccessErrorOccurred?.Invoke();
+                return null;
+            }
         }
 
         public void Copy(string sourcePath, string destPath)
@@ -45,7 +53,7 @@ namespace FileManager.Services
         public void Rename(string path, string newName)
         {
             string[] arrayStr = path.Split('\\');
-            string destPath = string.Empty;
+            string destPath;
 
             if (path.Last() == '\\')
             {
@@ -61,9 +69,109 @@ namespace FileManager.Services
             }
         }
 
-        public void CreateNewFolder(string path, string nameFolder)
+        public void CreateNewFolder(string path)
         {
-            Directory.CreateDirectory($@"{path}\{nameFolder}");
+            Directory.CreateDirectory(path);
+        }
+
+        public (long size, int countFolder, int countFiles) GetFolderProperties(string path)
+        {
+            var files = GetFiles(path);
+            var directories = GetFolders(path);
+            long size = 0;
+            int countFiles = 0;
+            int countFolders = 0;
+
+            if (files != null & directories != null)
+            {
+                size = files.Sum(f => f.Size);
+                countFiles = files.Count();
+                countFolders = directories.Count();
+
+
+                foreach (var d in directories)
+                {
+                    var result = GetFolderProperties(d.FullName);
+                    size += result.size;
+                    countFiles += result.countFiles;
+                    countFolders += result.countFolder;
+                }
+            }
+
+            return (size, countFolders, countFiles);
+        }
+
+        public bool FindFileByName(string name, string currentPath)
+        {
+            var files = GetFiles(currentPath);
+            
+            if(files != null)
+            {
+                foreach (var file in files)
+                {
+                    if (file.Name.ToLower().Contains(name))
+                    {
+                        var folderContent = GetFolderContent(currentPath).ToList();
+                        FileFound?.Invoke(folderContent.FindIndex(s => s.FullName.ToLower().Contains(name.ToLower())), currentPath, folderContent.Count);
+                        return true;
+                    }
+                }
+            }
+
+            var folders = GetFolders(currentPath);
+
+            if (folders != null)
+            {
+                foreach (var folder in folders)
+                {
+                    var result = FindFileByName(name, folder.FullName);
+
+                    if (result)
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        public bool Exists(string path)
+        {
+            if (path.Last() == '\\')
+            {
+                return Directory.Exists(path);
+            }
+            else
+            {
+                return File.Exists(path);
+            }
+        }
+
+        private IEnumerable<FileItem> GetFiles(string path)
+        {
+            DirectoryInfo directory = new DirectoryInfo(path);
+
+            try
+            {
+                return directory.EnumerateFiles().Select(file => new FileItem(file));
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return null;
+            }
+        }
+        private IEnumerable<FolderItem> GetFolders(string path)
+        {
+            DirectoryInfo directory = new DirectoryInfo(path);
+
+            try
+            {
+                return directory.EnumerateDirectories().Select(dir => new FolderItem(dir));
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return null;
+            }
         }
 
         private void CopyFolder(string sourcePath, string destPath)
@@ -79,101 +187,6 @@ namespace FileManager.Services
             foreach (string folderPath in Directory.GetDirectories(sourcePath))
             {
                 CopyFolder(folderPath, destPath + "\\" + Path.GetFileName(folderPath));
-            }
-        }
-
-        public (long size, int countFolder, int countFiles) GetFolderProperties(string path)
-        {
-            DirectoryInfo directoryInfo = new DirectoryInfo(path);
-            var files = directoryInfo.EnumerateFiles().Where(file => !file.Attributes.HasFlag(FileAttributes.Hidden));
-            var directories = directoryInfo.EnumerateDirectories().Where(dir => !dir.Attributes.HasFlag(FileAttributes.Hidden) && HasFolderPermission(dir));
-
-            long size = files.Sum(f => f.Length);
-            int countFiles = files.Count();
-            int countFolders = directories.Count();
-
-            foreach (var d in directories)
-            {
-                var result = GetFolderProperties(d.FullName);
-                size += result.size;
-                countFiles += result.countFiles;
-                countFolders += result.countFolder;
-            }
-
-            return (size, countFolders, countFiles);
-        }
-
-        public (string path, int position) FindFileByName(string name, string currentPath)
-        {
-            DirectoryInfo directory = new DirectoryInfo(currentPath);
-            
-
-
-            if (HasFolderPermission(directory))
-            {
-                foreach (var file in GetFiles(directory.FullName))
-                {
-                    if (file.Name.ToLower().Contains(name))
-                    {
-                        var folderContent = GetFolderContent(directory.FullName).ToList();
-                        return (directory.FullName, folderContent.FindIndex(s => s.FullName == file.FullName));
-                    }
-                }
-
-                foreach (var dir in GetFolders(directory.FullName))
-                {
-                    var result = FindFileByName(name, dir.FullName);
-
-                    if (result.position != -1)
-                    {
-                        return result;
-                    }
-                }
-            }
-
-            return (string.Empty, -1);
-        }
-
-        private IEnumerable<FileItem> GetFiles(string path)
-        {
-            DirectoryInfo directory = new DirectoryInfo(path);
-            return directory.EnumerateFiles().Where(file => !file.Attributes.HasFlag(FileAttributes.Hidden)).Select(file => new FileItem(file));
-        }
-        private IEnumerable<FolderItem> GetFolders(string path)
-        {
-            DirectoryInfo directory = new DirectoryInfo(path);
-            return directory.EnumerateDirectories().Where(dir => !dir.Attributes.HasFlag(FileAttributes.Hidden) && HasFolderPermission(dir)).Select(dir => new FolderItem(dir));
-
-        }
-
-        private bool HasFolderPermission(DirectoryInfo directoryInfo)
-        {
-            try
-            {
-                DirectorySecurity security = directoryInfo.GetAccessControl();
-                SecurityIdentifier users = new SecurityIdentifier(WellKnownSidType.BuiltinUsersSid, null);
-
-                foreach (AuthorizationRule rule in security.GetAccessRules(true, true, typeof(SecurityIdentifier)))
-                {
-                    if (rule.IdentityReference == users)
-                    {
-                        FileSystemAccessRule rights = (FileSystemAccessRule)rule;
-
-                        if (rights.AccessControlType == AccessControlType.Allow)
-                        {
-                            if (rights.FileSystemRights == (rights.FileSystemRights | FileSystemRights.ReadData))
-                            {
-                                return true;
-                            }
-                        }
-                    }
-                }
-
-                return false;
-            }
-            catch
-            {
-                return false;
             }
         }
     }

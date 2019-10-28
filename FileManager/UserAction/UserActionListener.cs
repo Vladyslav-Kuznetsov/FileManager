@@ -8,6 +8,7 @@ namespace FileManager.UserAction
         public event EventHandler<OperationEventArgs> FileServiceOperation;
         public event Action TabSwitching;
         public event Action PropertyRequest;
+        public event Action CompletionOfWork;
 
         public void ReadInput()
         {
@@ -27,8 +28,11 @@ namespace FileManager.UserAction
                 case ConsoleKey.Backspace:
                     Navigated?.Invoke(this, new NavigateEventArgs() { Type = NavigateType.Back });
                     break;
-                case ConsoleKey.F4:
+                case ConsoleKey.F3:
                     Navigated?.Invoke(this, new NavigateEventArgs() { Type = NavigateType.Root });
+                    break;
+                case ConsoleKey.F4:
+                    Navigated?.Invoke(this, new NavigateEventArgs() { Type = NavigateType.Drives});
                     break;
                 case ConsoleKey.Tab:
                     TabSwitching?.Invoke();
@@ -39,17 +43,20 @@ namespace FileManager.UserAction
                 case ConsoleKey.F2:
                     FileServiceOperation?.Invoke(this, new OperationEventArgs() { Type = OperationType.Move });
                     break;
-                case ConsoleKey.F6:
+                case ConsoleKey.F5:
                     PropertyRequest?.Invoke();
                     break;
-                case ConsoleKey.F7:
+                case ConsoleKey.F6:
                     FileServiceOperation?.Invoke(this, new OperationEventArgs() { Type = OperationType.Rename });
                     break;
-                case ConsoleKey.F8:
+                case ConsoleKey.F7:
                     FileServiceOperation?.Invoke(this, new OperationEventArgs() { Type = OperationType.Search });
                     break;
-                case ConsoleKey.F9:
+                case ConsoleKey.F8:
                     FileServiceOperation?.Invoke(this, new OperationEventArgs() { Type = OperationType.NewFolder});
+                    break;
+                case ConsoleKey.Escape:
+                    CompletionOfWork?.Invoke();
                     break;
             }
         }

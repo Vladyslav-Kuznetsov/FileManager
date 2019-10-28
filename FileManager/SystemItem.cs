@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 using System.Linq;
 
 namespace FileManager
@@ -18,7 +17,6 @@ namespace FileManager
 
         public string Name { get; }
         public string FullName { get; }
-        //public DirectoryInfo ParentDirectory { get; }
         public string ParentDirectory { get; }
         public string Root { get; }
         public DateTime LastAccessTime { get; }

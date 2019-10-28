@@ -26,12 +26,17 @@ namespace FileManager
             _fileSystemService = fileSystemService;
         }
 
+        private void ReturnToPreviousFolder()
+        {
+            InFolder("..");
+        }
+
         public int CoordinateX { get; }
         public int CoordinateY { get; }
-        public string CurrentPath { get;  set; }
+        public string CurrentPath { get; private set; }
         public int StartPosition { get; private set; }
         public int EndPosition { get; private set; }
-        public int Position { get;  set; }
+        public int Position { get; private set; }
         public bool IsNotEmpty => _folderContent.Any();
         public SystemItem SelectedItem { get => _folderContent[Position]; }
         public bool IsActive
@@ -49,10 +54,14 @@ namespace FileManager
                 if (_isActive)
                 {
                     _listener.Navigated += Navigate;
+                    _fileSystemService.FileFound += SelectFoundFile;
+                    _fileSystemService.AccessErrorOccurred += ReturnToPreviousFolder;
                 }
                 else
                 {
                     _listener.Navigated -= Navigate;
+                    _fileSystemService.FileFound -= SelectFoundFile;
+                    _fileSystemService.AccessErrorOccurred -= ReturnToPreviousFolder;
                 }
             }
         }
@@ -69,8 +78,14 @@ namespace FileManager
 
         public void InitCurrentDirectory()
         {
-            _folderContent.Clear();
-            _folderContent.AddRange(_fileSystemService.GetFolderContent(CurrentPath));
+            var folderContent = _fileSystemService.GetFolderContent(CurrentPath);
+
+            if (folderContent != null)
+            {
+                _folderContent.Clear();
+                _folderContent.AddRange(folderContent);
+            }
+
             EndPosition = (_folderContent.Count > StartPosition + Settings.NumberOfDisplayedStrings) ? StartPosition + Settings.NumberOfDisplayedStrings : _folderContent.Count;
         }
 
@@ -110,7 +125,18 @@ namespace FileManager
                 case NavigateType.Root when CurrentPath != string.Empty:
                     InFolder(Path.GetPathRoot(CurrentPath));
                     break;
+                case NavigateType.Drives:
+                    CurrentPath = string.Empty;
+                    Position = 0;
+                    break;
             }
+        }
+
+        private void SelectFoundFile(int position, string path, int count)
+        {
+            CurrentPath = path;
+            Position = position;
+            StartPosition = (count > Settings.NumberOfDisplayedStrings) ? Position - Settings.NumberOfDisplayedStrings + 1: 0;
         }
 
         private void SetStartingPosition()

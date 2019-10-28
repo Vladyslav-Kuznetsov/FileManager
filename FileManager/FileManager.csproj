@@ -66,6 +66,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="Controller.cs" />
+    <Compile Include="Views\Hints.cs" />
     <Compile Include="Views\SystemItemView.cs" />
     <Compile Include="Views\TabView.cs" />
   </ItemGroup>

@@ -4,7 +4,7 @@ namespace FileManager
 {
     public static class Settings
     {
-        public const int ExtensionCoodrinateX = 450;
+        public const int ExtensionCoodrinateX = 400;
         public const int SizeCoodrinateX = 520;
         public const int LeftWindowCoordinateX = 10;
         public const int RigthWindowCoordinateX = LeftWindowCoordinateX + TabWidth + 10;
@@ -30,7 +30,7 @@ namespace FileManager
         public const int FontSize = 12;
         public const int NumberOfDisplayedStrings = 40;
         public const string FontName = "ISOCPEUR";
-        public const string Hints = "F1 - copy | F2 - move | F3 - paste | F4 - root | F5 - list of disks | F6 - properties | F7 - rename | F8 - find | F9 - new folder";
+        public const string Hints = "F1 - copy  |  F2 - move  |  F3 - root  |  F4 - list of disks  |  F5 - properties  |  F6 - rename  |  F7 - find  |  F8 - new folder";
 
         public static void SetupDefaultConsoleSettings()
         {

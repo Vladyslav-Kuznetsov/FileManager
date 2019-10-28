@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 
 namespace FileManager
 {
@@ -66,6 +67,37 @@ namespace FileManager
                     return;
                 }
             }
+        }
+
+        public void ShowBar(string titleText, CancellationToken token)
+        {
+            int start = Settings.MessageWindowCoordinateX + 10;
+            int end = (Settings.MessageWindowCoordinateX + 10) + (Settings.MessageWindowWidth - 20);
+            int speed = 1;
+            int coordinateX = start;
+            int size = (Settings.MessageWindowWidth - 20) / 5;
+
+            while (!token.IsCancellationRequested)
+            {
+                _graphics.FillRectangle(Settings.ActiveColor, Settings.MessageWindowCoordinateX, Settings.MessageWindowCoordinateY, Settings.MessageWindowWidth, Settings.MessageWindowHeiht);
+                _graphics.DrawString(titleText, Settings.FontName, Settings.BlackColor, Settings.MessageWindowCoordinateX + 10, Settings.MessageWindowCoordinateY);
+                _graphics.DrawRectangle(Settings.BlackColor, Settings.MessageWindowCoordinateX + 10, Settings.MessageWindowCoordinateY + 40, Settings.MessageWindowWidth - 20, 30);
+                _graphics.FillRectangle(0xFF2cff03, coordinateX, Settings.MessageWindowCoordinateY + 41, size, 29);
+                _graphics.FlipPages();
+
+                coordinateX += speed;
+
+                if (coordinateX + size == end)
+                {
+                    speed *= -1;
+                }
+
+                if(coordinateX == start)
+                {
+                    speed *= -1;
+                }
+            }
+
         }
     }
 }

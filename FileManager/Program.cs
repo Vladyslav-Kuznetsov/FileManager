@@ -5,8 +5,8 @@
         public static void Main(string[] args)
         {
             Settings.SetupDefaultConsoleSettings();
-            Controller engine = new Controller();
-            engine.Start();
+            Controller conroller = new Controller();
+            conroller.Start();
         }
     }
 }
