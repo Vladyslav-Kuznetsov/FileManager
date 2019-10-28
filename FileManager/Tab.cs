@@ -26,11 +26,6 @@ namespace FileManager
             _fileSystemService = fileSystemService;
         }
 
-        private void ReturnToPreviousFolder()
-        {
-            InFolder("..");
-        }
-
         public int CoordinateX { get; }
         public int CoordinateY { get; }
         public string CurrentPath { get; private set; }
@@ -137,6 +132,11 @@ namespace FileManager
             CurrentPath = path;
             Position = position;
             StartPosition = (count > Settings.NumberOfDisplayedStrings) ? Position - Settings.NumberOfDisplayedStrings + 1 : 0;
+        }
+
+        private void ReturnToPreviousFolder()
+        {
+            InFolder("..");
         }
 
         private void SetStartingPosition()
