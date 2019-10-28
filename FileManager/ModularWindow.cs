@@ -92,7 +92,7 @@ namespace FileManager
                     speed *= -1;
                 }
 
-                if(coordinateX == start)
+                if (coordinateX == start)
                 {
                     speed *= -1;
                 }

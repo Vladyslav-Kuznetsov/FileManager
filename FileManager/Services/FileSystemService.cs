@@ -104,8 +104,8 @@ namespace FileManager.Services
         public bool FindFileByName(string name, string currentPath)
         {
             var files = GetFiles(currentPath);
-            
-            if(files != null)
+
+            if (files != null)
             {
                 foreach (var file in files)
                 {

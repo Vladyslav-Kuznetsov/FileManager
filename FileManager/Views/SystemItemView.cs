@@ -17,7 +17,7 @@ namespace FileManager.Views
         {
             bool exit = false;
 
-            while(!exit)
+            while (!exit)
             {
                 _graphics.FillRectangle(Settings.ActiveColor, Settings.PropertiesCoordinateX, Settings.PropertiesCoordinateY, Settings.PropertiesWidth, Settings.PropertiesHeight);
                 _graphics.DrawString("Name:", Settings.FontName, Settings.BlackColor, Settings.PropertiesCoordinateX, Settings.PropertiesCoordinateY, Settings.FontSize);

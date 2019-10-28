@@ -18,7 +18,7 @@ namespace FileManager.Views
 
         public void Show()
         {
-            foreach(var tab in _tabs)
+            foreach (var tab in _tabs)
             {
                 ShowTab(tab);
             }
@@ -37,7 +37,7 @@ namespace FileManager.Views
             {
                 tab.InitCurrentDirectory();
                 tab.CheckPosition();
-                DisplayFolderContent(color,tab);
+                DisplayFolderContent(color, tab);
             }
         }
 

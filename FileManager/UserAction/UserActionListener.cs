@@ -32,7 +32,7 @@ namespace FileManager.UserAction
                     Navigated?.Invoke(this, new NavigateEventArgs() { Type = NavigateType.Root });
                     break;
                 case ConsoleKey.F4:
-                    Navigated?.Invoke(this, new NavigateEventArgs() { Type = NavigateType.Drives});
+                    Navigated?.Invoke(this, new NavigateEventArgs() { Type = NavigateType.Drives });
                     break;
                 case ConsoleKey.Tab:
                     TabSwitching?.Invoke();
@@ -53,7 +53,7 @@ namespace FileManager.UserAction
                     FileServiceOperation?.Invoke(this, new OperationEventArgs() { Type = OperationType.Search });
                     break;
                 case ConsoleKey.F8:
-                    FileServiceOperation?.Invoke(this, new OperationEventArgs() { Type = OperationType.NewFolder});
+                    FileServiceOperation?.Invoke(this, new OperationEventArgs() { Type = OperationType.NewFolder });
                     break;
                 case ConsoleKey.Escape:
                     CompletionOfWork?.Invoke();

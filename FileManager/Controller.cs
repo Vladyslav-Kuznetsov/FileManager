@@ -41,7 +41,7 @@ namespace FileManager
             _userActionListener.CompletionOfWork += () => Exit = true;
         }
 
-        public bool Exit { get; set; }
+        public bool Exit { get; private set; }
 
         public void Start()
         {

@@ -136,7 +136,7 @@ namespace FileManager
         {
             CurrentPath = path;
             Position = position;
-            StartPosition = (count > Settings.NumberOfDisplayedStrings) ? Position - Settings.NumberOfDisplayedStrings + 1: 0;
+            StartPosition = (count > Settings.NumberOfDisplayedStrings) ? Position - Settings.NumberOfDisplayedStrings + 1 : 0;
         }
 
         private void SetStartingPosition()
